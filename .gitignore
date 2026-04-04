@@ -1,0 +1,23 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+
+# TypeScript build artifacts
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Logs
+*.log
+
+# Vite dep pre-bundle cache
+.vite
+
+# Playwright MCP output
+.playwright-mcp/
+test-results/
+playwright-report/

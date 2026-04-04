@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 60% 5%;
+    --foreground: 185 30% 88%;
+    --card: 220 50% 8%;
+    --card-foreground: 185 30% 88%;
+    --popover: 220 50% 8%;
+    --popover-foreground: 185 30% 88%;
+    --primary: 174 90% 50%;
+    --primary-foreground: 220 60% 5%;
+    --secondary: 220 40% 13%;
+    --secondary-foreground: 185 30% 88%;
+    --muted: 220 40% 13%;
+    --muted-foreground: 210 15% 50%;
+    --accent: 174 90% 50%;
+    --accent-foreground: 220 60% 5%;
+    --destructive: 345 100% 55%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 35% 15%;
+    --input: 220 35% 15%;
+    --ring: 174 90% 50%;
+    --radius: 0px;
+    --sidebar-background: 220 50% 6%;
+    --sidebar-foreground: 185 30% 88%;
+    --sidebar-primary: 174 90% 50%;
+    --sidebar-primary-foreground: 220 60% 5%;
+    --sidebar-accent: 220 40% 13%;
+    --sidebar-accent-foreground: 185 30% 88%;
+    --sidebar-border: 220 35% 15%;
+    --sidebar-ring: 174 90% 50%;
+
+    --font-pixel: 'Pixelify Sans', 'Press Start 2P', monospace;
+    --font-pixel-sm: 'Press Start 2P', 'Silkscreen', monospace;
+    --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  }
+
+  .dark {
+    --background: 220 60% 5%;
+    --foreground: 185 30% 88%;
+    --card: 220 50% 8%;
+    --card-foreground: 185 30% 88%;
+    --popover: 220 50% 8%;
+    --popover-foreground: 185 30% 88%;
+    --primary: 174 90% 50%;
+    --primary-foreground: 220 60% 5%;
+    --secondary: 220 40% 13%;
+    --secondary-foreground: 185 30% 88%;
+    --muted: 220 40% 13%;
+    --muted-foreground: 210 15% 50%;
+    --accent: 174 90% 50%;
+    --accent-foreground: 220 60% 5%;
+    --destructive: 345 100% 55%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 35% 15%;
+    --input: 220 35% 15%;
+    --ring: 174 90% 50%;
+    --sidebar-background: 220 50% 6%;
+    --sidebar-foreground: 185 30% 88%;
+    --sidebar-primary: 174 90% 50%;
+    --sidebar-primary-foreground: 220 60% 5%;
+    --sidebar-accent: 220 40% 13%;
+    --sidebar-accent-foreground: 185 30% 88%;
+    --sidebar-border: 220 35% 15%;
+    --sidebar-ring: 174 90% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    image-rendering: pixelated;
+  }
+}
+
+@layer components {
+  /* CRT scanline overlay */
+  .scanlines::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+  }
+
+  /* Neon glow text */
+  .neon-text-cyan {
+    text-shadow:
+      0 0 7px rgba(34, 211, 238, 0.7),
+      0 0 20px rgba(34, 211, 238, 0.4),
+      0 0 40px rgba(34, 211, 238, 0.2);
+  }
+
+  .neon-text-green {
+    text-shadow:
+      0 0 7px rgba(16, 185, 129, 0.7),
+      0 0 20px rgba(16, 185, 129, 0.4),
+      0 0 40px rgba(16, 185, 129, 0.2);
+  }
+
+  .neon-text-pink {
+    text-shadow:
+      0 0 7px rgba(255, 45, 120, 0.7),
+      0 0 20px rgba(255, 45, 120, 0.4),
+      0 0 40px rgba(255, 45, 120, 0.2);
+  }
+
+  .neon-text-yellow {
+    text-shadow:
+      0 0 7px rgba(232, 255, 0, 0.7),
+      0 0 20px rgba(232, 255, 0, 0.4),
+      0 0 40px rgba(232, 255, 0, 0.2);
+  }
+
+  /* Neon glow box */
+  .neon-box-cyan {
+    box-shadow:
+      0 0 5px rgba(34, 211, 238, 0.3),
+      0 0 15px rgba(34, 211, 238, 0.15),
+      inset 0 0 10px rgba(34, 211, 238, 0.05);
+  }
+
+  .neon-box-green {
+    box-shadow:
+      0 0 5px rgba(16, 185, 129, 0.3),
+      0 0 15px rgba(16, 185, 129, 0.15),
+      inset 0 0 10px rgba(16, 185, 129, 0.05);
+  }
+
+  .neon-box-pink {
+    box-shadow:
+      0 0 5px rgba(255, 45, 120, 0.3),
+      0 0 15px rgba(255, 45, 120, 0.15),
+      inset 0 0 10px rgba(255, 45, 120, 0.05);
+  }
+
+  /* Pixel art HP bar segments */
+  .pixel-bar {
+    display: flex;
+    gap: 2px;
+  }
+
+  .pixel-bar-segment {
+    height: 100%;
+    flex: 1;
+    min-width: 4px;
+  }
+
+  /* Pixel font utilities */
+  .font-pixel {
+    font-family: var(--font-pixel);
+  }
+
+  .font-pixel-sm {
+    font-family: var(--font-pixel-sm);
+  }
+
+  /* Pixel border — 2px solid, no radius */
+  .pixel-border {
+    border: 2px solid;
+    border-radius: 0;
+  }
+
+  /* Blinking cursor animation */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  /* Neon flicker */
+  @keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.6; }
+  }
+  .animate-neon-flicker {
+    animation: neon-flicker 3s infinite;
+  }
+}
