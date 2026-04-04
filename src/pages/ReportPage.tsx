@@ -52,7 +52,7 @@ function ReportPage() {
       <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background/90 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <img src="/shield-logo.svg" alt="" className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+            <img src="/logo.png" alt="" className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
             <span className="font-pixel text-base sm:text-lg text-cyan-400 neon-text-cyan font-bold">
               IsThisSafeToApe
             </span>
