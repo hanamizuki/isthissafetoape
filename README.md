@@ -4,7 +4,7 @@ AI-powered risk assessment for DeFi projects. Paste a URL, get a detailed safety
 
 ## What It Does
 
-Enter any DeFi project, airdrop, or crypto protocol URL. The AI analyzes it across 6 dimensions and returns a scored risk report (0–100):
+Enter any DeFi project, airdrop, or crypto protocol URL. The AI fetches the target page and searches third-party sources, then analyzes everything across 6 dimensions and returns a scored risk report (0–100):
 
 - **Smart Contract & Security** — audit status, code quality, centralization risks
 - **Economic & Financial** — tokenomics, liquidity, yield sustainability
@@ -17,6 +17,8 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 
 ## Features
 
+- **Web research** — fetches the target site via [Jina Reader](https://jina.ai/reader/) and searches external sources via [Brave Search API](https://brave.com/search/api/) before analysis
+- **Deep dive prompt** — generates a copyable prompt from the report so you can hand it to your own AI agent for deeper investigation, with dynamic suggestions based on weak scoring categories
 - Cyberpunk/retro pixel-art UI with neon glow effects
 - Shareable report links (`/report/:id`)
 - 24-hour scan caching per hostname
@@ -28,7 +30,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **UI Components**: shadcn/ui (Radix primitives)
 - **Backend**: Supabase Edge Functions (Deno)
-- **AI**: Claude (Haiku 4.5) via Anthropic SDK
+- **AI**: Claude (Haiku 4.5) via Anthropic SDK, with web research (Jina Reader + Brave Search)
 - **Database**: Supabase (PostgreSQL)
 - **Deployment**: Vercel (frontend) + Supabase (backend)
 
@@ -59,6 +61,8 @@ bun run dev
 4. Set edge function secrets:
    ```bash
    supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+   supabase secrets set JINA_API_KEY=jina_...
+   supabase secrets set BRAVE_SEARCH_API_KEY=...
    ```
 
 ## License

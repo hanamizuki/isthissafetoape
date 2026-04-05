@@ -24,4 +24,9 @@ todos/
 .playwright-mcp/
 test-results/
 playwright-report/
+
+# GStack
 .gstack/
+
+# Internal docs (may contain API keys)
+docs/CONTEXT.md
