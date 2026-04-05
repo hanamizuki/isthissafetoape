@@ -163,6 +163,11 @@
       inset 0 0 10px rgba(var(--neon-pink-rgb), 0.05);
   }
 
+  /* Neon drop shadow for logo/icons — uses CSS custom property */
+  .neon-drop-cyan {
+    filter: drop-shadow(0 0 8px rgba(var(--neon-cyan-rgb), 0.5));
+  }
+
   /* Pixel art HP bar segments */
   .pixel-bar {
     display: flex;

@@ -8,7 +8,8 @@
  * @returns Relative time string, e.g. "JUST NOW", "5M AGO", or "5M" (compact)
  */
 export function getTimeAgo(dateStr: string, compact = false): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
+  const date = new Date(dateStr)
+  const diff = Date.now() - date.getTime()
 
   // Guard against invalid date strings producing NaN
   if (Number.isNaN(diff)) return compact ? "?" : "UNKNOWN"
@@ -20,5 +21,5 @@ export function getTimeAgo(dateStr: string, compact = false): string {
   if (hours < 24) return compact ? `${hours}H` : `${hours}H AGO`
   const days = Math.floor(hours / 24)
   if (days < 30) return compact ? `${days}D` : `${days}D AGO`
-  return new Date(dateStr).toLocaleDateString()
+  return date.toLocaleDateString()
 }
