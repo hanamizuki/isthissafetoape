@@ -17,6 +17,9 @@ vite.config.d.ts
 # Vite dep pre-bundle cache
 .vite
 
+# Todos
+todos/
+
 # Playwright MCP output
 .playwright-mcp/
 test-results/
