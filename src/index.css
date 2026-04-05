@@ -82,6 +82,10 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+  }
+
+  /* Only apply pixelated rendering to intentional pixel art, not the entire page */
+  .pixel-art {
     image-rendering: pixelated;
   }
 
