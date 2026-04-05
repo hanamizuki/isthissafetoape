@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, useParams, Link } from "react-router-dom"
 import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -358,7 +358,7 @@ function generateDeepDivePrompt(report: RiskReport): string {
   const suggestions: string[] = []
 
   for (const cat of report.categories) {
-    const pct = (cat.score / cat.maxScore) * 100
+    const pct = cat.maxScore > 0 ? (cat.score / cat.maxScore) * 100 : 0
     const name = cat.name.toLowerCase()
     if (pct < 60) {
       if (name.includes("contract") || name.includes("security")) {
@@ -415,7 +415,7 @@ function generateDeepDivePrompt(report: RiskReport): string {
 // Copyable text box that renders the deep-dive prompt for users to take to their AI agent
 function DeepDivePrompt({ report }: { report: RiskReport }) {
   const [copied, setCopied] = useState(false)
-  const prompt = generateDeepDivePrompt(report)
+  const prompt = useMemo(() => generateDeepDivePrompt(report), [report])
 
   const handleCopy = async () => {
     try {
@@ -429,13 +429,14 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
   }
 
   return (
-    <div className="border-2 border-cyan-500/15 bg-card/50 p-5">
+    <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
       <div className="flex items-center justify-between mb-3">
         <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">
           TAKE THIS TO YOUR AI AGENT
         </div>
         <button
           onClick={handleCopy}
+          aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
           className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -445,7 +446,7 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
       <p className="text-xs text-muted-foreground mb-3">
         Copy this prompt and paste it into your favorite AI assistant for a deeper, independent analysis.
       </p>
-      <pre className="text-xs text-muted-foreground/80 bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed">
+      <pre className="text-xs text-muted-foreground/80 bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed" tabIndex={0} role="region" aria-label="Deep dive prompt text">
         {prompt}
       </pre>
     </div>
