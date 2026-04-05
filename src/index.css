@@ -180,21 +180,31 @@
     border-radius: 0;
   }
 
-  /* Blinking cursor animation */
+  /* Blinking cursor animation — only for users who accept motion */
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
-  .animate-blink {
-    animation: blink 1s step-end infinite;
-  }
 
-  /* Neon flicker */
+  /* Neon flicker — only for users who accept motion.
+     Has 5 opacity changes in 3s which violates WCAG 2.3.1 for
+     users sensitive to flashing, so it must be gated. */
   @keyframes neon-flicker {
     0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
     20%, 24%, 55% { opacity: 0.6; }
   }
+}
+
+/* Gate all animations behind reduced-motion preference.
+   Users who prefer reduced motion get static fallbacks. */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
   .animate-neon-flicker {
     animation: neon-flicker 3s infinite;
+  }
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite;
   }
 }
