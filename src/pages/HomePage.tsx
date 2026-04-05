@@ -107,6 +107,21 @@ function HomePage() {
           </div>
         </div>
 
+        {/* Recent Scans */}
+        {recentScans.data && recentScans.data.length > 0 && (
+          <div className="mb-14">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="h-4 w-4 text-cyan-400/60" />
+              <span className="font-pixel text-sm text-cyan-400/80">Recent Scans</span>
+            </div>
+            <div className="space-y-2">
+              {recentScans.data.map(scan => (
+                <RecentScanRow key={scan.id} scan={scan} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Feature grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <FeatureCard
@@ -146,21 +161,6 @@ function HomePage() {
             color="cyan"
           />
         </div>
-
-        {/* Recent Scans */}
-        {recentScans.data && recentScans.data.length > 0 && (
-          <div className="mt-14">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-4 w-4 text-cyan-400/60" />
-              <span className="font-pixel text-sm text-cyan-400/80">Recent Scans</span>
-            </div>
-            <div className="space-y-2">
-              {recentScans.data.map(scan => (
-                <RecentScanRow key={scan.id} scan={scan} />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Bottom */}
         <div className="text-center mt-14 font-pixel-sm text-[6px] text-muted-foreground/40 tracking-wider">
