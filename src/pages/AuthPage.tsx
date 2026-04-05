@@ -39,7 +39,7 @@ function AuthPage() {
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden scanlines">
       <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/8 blur-[120px] pointer-events-none" />
 
-      <div className="w-full max-w-sm mx-4">
+      <main id="main-content" className="w-full max-w-sm mx-4">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <img src="/shield-logo.svg" alt="" className="h-10 w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
@@ -97,7 +97,7 @@ function AuthPage() {
             {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
           </button>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

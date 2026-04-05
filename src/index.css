@@ -36,6 +36,12 @@
     --font-pixel: 'Pixelify Sans', 'Press Start 2P', monospace;
     --font-pixel-sm: 'Press Start 2P', 'Silkscreen', monospace;
     --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+
+    /* Neon glow RGB channels — used with rgba() in neon-* utilities */
+    --neon-cyan-rgb: 34, 211, 238;
+    --neon-green-rgb: 16, 185, 129;
+    --neon-pink-rgb: 255, 45, 120;
+    --neon-yellow-rgb: 232, 255, 0;
   }
 
   .dark {
@@ -76,7 +82,16 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+  }
+
+  /* Only apply pixelated rendering to intentional pixel art, not the entire page */
+  .pixel-art {
     image-rendering: pixelated;
+  }
+
+  /* Keyboard focus indicator for all interactive elements */
+  :focus-visible {
+    @apply outline-none ring-2 ring-cyan-500 ring-offset-2 ring-offset-background;
   }
 }
 
@@ -97,18 +112,19 @@
     );
   }
 
+  /* Disable scanline overlay on mobile to save a full-screen compositing layer */
   @media (max-width: 767px) {
     .scanlines::after {
       display: none;
     }
   }
 
-  /* Neon glow text — reduced to 1 layer on mobile to cut rasterization cost */
+  /* Neon glow text — uses CSS custom property RGB channels */
   .neon-text-cyan {
     text-shadow:
-      0 0 7px rgba(34, 211, 238, 0.7),
-      0 0 20px rgba(34, 211, 238, 0.4),
-      0 0 40px rgba(34, 211, 238, 0.2);
+      0 0 7px rgba(var(--neon-cyan-rgb), 0.7),
+      0 0 20px rgba(var(--neon-cyan-rgb), 0.4),
+      0 0 40px rgba(var(--neon-cyan-rgb), 0.2);
   }
 
   @media (max-width: 767px) {
@@ -122,45 +138,50 @@
 
   .neon-text-green {
     text-shadow:
-      0 0 7px rgba(16, 185, 129, 0.7),
-      0 0 20px rgba(16, 185, 129, 0.4),
-      0 0 40px rgba(16, 185, 129, 0.2);
+      0 0 7px rgba(var(--neon-green-rgb), 0.7),
+      0 0 20px rgba(var(--neon-green-rgb), 0.4),
+      0 0 40px rgba(var(--neon-green-rgb), 0.2);
   }
 
   .neon-text-pink {
     text-shadow:
-      0 0 7px rgba(255, 45, 120, 0.7),
-      0 0 20px rgba(255, 45, 120, 0.4),
-      0 0 40px rgba(255, 45, 120, 0.2);
+      0 0 7px rgba(var(--neon-pink-rgb), 0.7),
+      0 0 20px rgba(var(--neon-pink-rgb), 0.4),
+      0 0 40px rgba(var(--neon-pink-rgb), 0.2);
   }
 
   .neon-text-yellow {
     text-shadow:
-      0 0 7px rgba(232, 255, 0, 0.7),
-      0 0 20px rgba(232, 255, 0, 0.4),
-      0 0 40px rgba(232, 255, 0, 0.2);
+      0 0 7px rgba(var(--neon-yellow-rgb), 0.7),
+      0 0 20px rgba(var(--neon-yellow-rgb), 0.4),
+      0 0 40px rgba(var(--neon-yellow-rgb), 0.2);
   }
 
-  /* Neon glow box */
+  /* Neon glow box — uses CSS custom property RGB channels */
   .neon-box-cyan {
     box-shadow:
-      0 0 5px rgba(34, 211, 238, 0.3),
-      0 0 15px rgba(34, 211, 238, 0.15),
-      inset 0 0 10px rgba(34, 211, 238, 0.05);
+      0 0 5px rgba(var(--neon-cyan-rgb), 0.3),
+      0 0 15px rgba(var(--neon-cyan-rgb), 0.15),
+      inset 0 0 10px rgba(var(--neon-cyan-rgb), 0.05);
   }
 
   .neon-box-green {
     box-shadow:
-      0 0 5px rgba(16, 185, 129, 0.3),
-      0 0 15px rgba(16, 185, 129, 0.15),
-      inset 0 0 10px rgba(16, 185, 129, 0.05);
+      0 0 5px rgba(var(--neon-green-rgb), 0.3),
+      0 0 15px rgba(var(--neon-green-rgb), 0.15),
+      inset 0 0 10px rgba(var(--neon-green-rgb), 0.05);
   }
 
   .neon-box-pink {
     box-shadow:
-      0 0 5px rgba(255, 45, 120, 0.3),
-      0 0 15px rgba(255, 45, 120, 0.15),
-      inset 0 0 10px rgba(255, 45, 120, 0.05);
+      0 0 5px rgba(var(--neon-pink-rgb), 0.3),
+      0 0 15px rgba(var(--neon-pink-rgb), 0.15),
+      inset 0 0 10px rgba(var(--neon-pink-rgb), 0.05);
+  }
+
+  /* Neon drop shadow for logo/icons — uses CSS custom property */
+  .neon-drop-cyan {
+    filter: drop-shadow(0 0 8px rgba(var(--neon-cyan-rgb), 0.5));
   }
 
   /* Pixel art HP bar segments */
@@ -190,21 +211,40 @@
     border-radius: 0;
   }
 
-  /* Blinking cursor animation */
+  /* Blinking cursor animation — only for users who accept motion */
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
-  .animate-blink {
-    animation: blink 1s step-end infinite;
-  }
 
-  /* Neon flicker */
+  /* Neon flicker — only for users who accept motion.
+     Has 5 opacity changes in 3s which violates WCAG 2.3.1 for
+     users sensitive to flashing, so it must be gated. */
   @keyframes neon-flicker {
     0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
     20%, 24%, 55% { opacity: 0.6; }
   }
+
+  /* Breathe animation — gentle opacity pulse for subtle "alive" feel.
+     Values match tailwind.config.js; duplicated here so the @keyframes
+     is guaranteed to exist even when only our custom @media gate below
+     references the animation (outside Tailwind's generated output). */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.85; }
+  }
+}
+
+/* Gate all animations behind reduced-motion preference.
+   Users who prefer reduced motion get static fallbacks. */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
   .animate-neon-flicker {
     animation: neon-flicker 3s infinite;
+  }
+  .animate-breathe {
+    animation: breathe 4s ease-in-out infinite;
   }
 }

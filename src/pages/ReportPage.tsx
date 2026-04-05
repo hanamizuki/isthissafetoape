@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, useParams, Link } from "react-router-dom"
 import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAnalyze } from "@/hooks/useAnalyze"
 import { useScan } from "@/hooks/useScan"
@@ -50,22 +51,10 @@ function ReportPage() {
       {/* Blur orb — hidden on mobile to reduce GPU compositing cost */}
       <div className="hidden md:block absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
 
-      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="" className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-            <span className="font-pixel text-base sm:text-lg text-cyan-400 neon-text-cyan font-bold">
-              IsThisSafeToApe
-            </span>
-          </Link>
-          <a href="https://github.com/hanamizuki/isthissafetoape" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-cyan-400 transition-colors" title="View source on GitHub">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          </a>
-        </div>
-      </header>
+      <Header />
 
-      <main className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
+      <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
+        <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" />
           <span className="font-pixel-sm text-[8px]">NEW SCAN</span>
         </Link>
@@ -74,8 +63,8 @@ function ReportPage() {
           <div className="flex items-center gap-2 text-sm mb-8 border-2 border-cyan-500/15 bg-card/50 px-4 py-2.5">
             <span className="font-pixel-sm text-[7px] text-cyan-500/50">TARGET:</span>
             <span className="text-foreground truncate font-mono text-xs">{displayUrl}</span>
-            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 text-muted-foreground hover:text-cyan-400 transition-colors">
-              <ExternalLink className="h-3.5 w-3.5" />
+            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors">
+              <ExternalLink className="h-4 w-4" />
             </a>
           </div>
         )}
@@ -159,7 +148,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
       <span className="font-pixel-sm text-[7px] text-muted-foreground/60 mr-1">SHARE:</span>
       <button
         onClick={copyLink}
-        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
       >
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
         <span className="font-pixel-sm text-[7px]">{copied ? "COPIED" : "LINK"}</span>
@@ -168,7 +157,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
         href={twitterUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
       >
         <XIcon className="h-3 w-3" />
         <span className="font-pixel-sm text-[7px]">POST</span>
@@ -202,7 +191,7 @@ function ReportContent({ report }: { report: RiskReport }) {
       </div>
 
       <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
-        <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider mb-2">TL;DR</div>
+        <h2 className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider mb-2">TL;DR</h2>
         <p className="text-sm text-foreground leading-relaxed">{report.tldr}</p>
       </div>
 
@@ -210,9 +199,9 @@ function ReportContent({ report }: { report: RiskReport }) {
         <div className="border-2 border-pink-500/25 bg-pink-500/[0.03] p-5 neon-box-pink">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="h-4 w-4 text-pink-400" />
-            <span className="font-pixel text-sm font-bold text-pink-400 neon-text-pink">
+            <h2 className="font-pixel text-sm font-bold text-pink-400 neon-text-pink">
               RED FLAGS ({report.redFlags.length})
-            </span>
+            </h2>
           </div>
           <div className="space-y-3">
             {report.redFlags.map((flag, i) => (
@@ -226,7 +215,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         <div className="border-2 border-emerald-500/25 bg-emerald-500/[0.03] p-5 neon-box-green">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <span className="font-pixel text-sm font-bold text-emerald-400 neon-text-green">POSITIVE SIGNALS</span>
+            <h2 className="font-pixel text-sm font-bold text-emerald-400 neon-text-green">POSITIVE SIGNALS</h2>
           </div>
           <ul className="space-y-1.5">
             {report.positives.map((p, i) => (
@@ -241,7 +230,7 @@ function ReportContent({ report }: { report: RiskReport }) {
 
       {report.categories && (
         <div>
-          <div className="font-pixel-sm text-[8px] text-muted-foreground tracking-widest mb-3">DETAILED BREAKDOWN</div>
+          <h2 className="font-pixel-sm text-[8px] text-muted-foreground tracking-widest mb-3">DETAILED BREAKDOWN</h2>
           <div className="space-y-3">
             {report.categories.map((cat, i) => (
               <CategoryCard key={i} category={cat} />
@@ -438,13 +427,13 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
   return (
     <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">
+        <h2 className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">
           TAKE THIS TO YOUR AI AGENT
-        </div>
+        </h2>
         <button
           onClick={handleCopy}
           aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
-          className="flex items-center p-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400"
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>

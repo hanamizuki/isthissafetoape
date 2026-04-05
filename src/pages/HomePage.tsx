@@ -2,10 +2,12 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { Search, Shield, Eye, TrendingUp, Zap, AlertTriangle, Lock, LogIn, LogOut, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Header } from "@/components/Header"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
 import { useRecentScans } from "@/hooks/useRecentScans"
+import { getTimeAgo } from "@/lib/time"
 
 function HomePage() {
   const [url, setUrl] = useState("")
@@ -32,58 +34,41 @@ function HomePage() {
       <div className="hidden md:block absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="hidden md:block absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
 
-      {/* Header */}
-      {/* Opaque bg on mobile to skip backdrop-blur compositing; translucent + blur on desktop */}
-      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="" className="h-8 w-8 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-            <span className="font-pixel text-base sm:text-lg text-cyan-400 neon-text-cyan font-bold">
-              IsThisSafeToApe
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* GitHub repo link */}
-            <a href="https://github.com/hanamizuki/isthissafetoape" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-cyan-400 transition-colors" title="View source on GitHub">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            </a>
-            {!authLoading && (
-              user ? (
-                <>
-                  <Link to="/history" className="flex items-center gap-1.5 text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history">
-                    <Clock className="h-3.5 w-3.5" />
-                  </Link>
-                  <span className="font-pixel-sm text-[7px] text-emerald-400/70 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
-                    UNLIMITED
-                  </span>
-                  <button
-                    onClick={() => signOut()}
-                    className="flex items-center gap-1.5 text-muted-foreground hover:text-cyan-400 transition-colors"
-                    title="Sign out"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="hidden md:inline font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
-                    FREE &middot; 3/DAY
-                  </span>
-                  <Link to="/auth">
-                    <Button variant="outline" className="font-pixel-sm text-[8px] h-8 px-3 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
-                      <LogIn className="h-3 w-3 md:mr-1.5" />
-                      <span className="hidden md:inline">SIGN IN</span>
-                    </Button>
-                  </Link>
-                </>
-              )
-            )}
-          </div>
-        </div>
-      </header>
+      <Header>
+        {!authLoading && (
+          user ? (
+            <>
+              <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history" aria-label="Scan history">
+                <Clock className="h-4 w-4" />
+              </Link>
+              <span className="font-pixel-sm text-[7px] text-emerald-400/70 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
+                UNLIMITED
+              </span>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors"
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="hidden md:inline font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
+                FREE &middot; 3/DAY
+              </span>
+              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+                <LogIn className="h-3 w-3" />
+                <span className="hidden md:inline">SIGN IN</span>
+              </Link>
+            </>
+          )
+        )}
+      </Header>
 
       {/* Hero */}
-      <main className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
+      <main id="main-content" className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
         <div className="text-center space-y-5 mb-12">
           <h1 className="font-pixel text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
             Don&apos;t trust.
@@ -194,7 +179,7 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
     : scan.risk_level ? "text-pink-400"
     : "text-muted-foreground"
 
-  const timeAgo = getTimeAgo(scan.created_at)
+  const timeAgo = getTimeAgo(scan.created_at, true)
 
   return (
     <button
@@ -214,16 +199,6 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
   )
 }
 
-function getTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "NOW"
-  if (mins < 60) return `${mins}M`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}H`
-  const days = Math.floor(hours / 24)
-  return `${days}D`
-}
 
 function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: "cyan" | "emerald" | "pink" }) {
   const colorMap = {
