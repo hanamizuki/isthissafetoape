@@ -24,3 +24,6 @@ todos/
 .playwright-mcp/
 test-results/
 playwright-report/
+
+# Internal docs (may contain API keys)
+docs/CONTEXT.md
