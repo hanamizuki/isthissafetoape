@@ -48,7 +48,7 @@ async function searchWithBrave(hostname: string): Promise<string[]> {
     queries.map(async (q) => {
       try {
         const res = await fetch(
-          `https://api.search.brave.com/res/v1/llm/context?q=${encodeURIComponent(q)}&max_tokens=2048`,
+          `https://api.search.brave.com/res/v1/llm/context?q=${encodeURIComponent(q)}`,
           {
             headers: { "X-Subscription-Token": apiKey },
             signal: AbortSignal.timeout(10_000),
@@ -123,6 +123,11 @@ Deno.serve(async (req) => {
     try {
       const parsed = new URL(url);
 
+      // Reject URLs with embedded credentials (user:pass@host)
+      if (parsed.username || parsed.password) {
+        return jsonResponse({ error: "URLs with embedded credentials are not allowed" }, 400);
+      }
+
       // SSRF protection: only allow http/https schemes
       if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
         return jsonResponse({ error: "Private/internal URLs are not allowed" }, 400);
@@ -135,6 +140,8 @@ Deno.serve(async (req) => {
       const bare = lower.replace(/^\[|\]$/g, ""); // strip brackets from IPv6
       const isPrivate =
         lower === "localhost" ||
+        lower === "localhost." ||
+        lower.endsWith(".localhost") ||
         lower === "0.0.0.0" ||
         lower.endsWith(".local") ||
         // IPv4 private ranges
@@ -340,8 +347,11 @@ Your scoring must follow ONLY the framework above.`;
         .replace(/```\s*$/, "")
         .trim();
       report = JSON.parse(jsonStr);
-    } catch {
-      console.error("[analyze] Failed to parse AI response:", responseText);
+    } catch (parseErr) {
+      console.error("[analyze] Failed to parse AI response", {
+        error: parseErr instanceof Error ? parseErr.message : String(parseErr),
+        responseLength: responseText.length,
+      });
       return jsonResponse({ error: "Failed to parse AI response" }, 500);
     }
 
