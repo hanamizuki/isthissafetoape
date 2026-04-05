@@ -81,7 +81,8 @@ function HistoryPage() {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden scanlines">
-      <div className="absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
+      {/* Blur orb — hidden on mobile to reduce GPU compositing cost */}
+      <div className="hidden md:block absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
 
       <Header />
 

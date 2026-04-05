@@ -30,9 +30,9 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden scanlines">
-      {/* Neon glow orbs */}
-      <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
+      {/* Neon glow orbs — hidden on mobile to avoid GPU-heavy blur compositing */}
+      <div className="hidden md:block absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
 
       <Header>
         {!authLoading && (
@@ -55,12 +55,12 @@ function HomePage() {
             </>
           ) : (
             <>
-              <span className="font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
+              <span className="hidden md:inline font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
                 FREE &middot; 3/DAY
               </span>
               <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                 <LogIn className="h-3 w-3" />
-                SIGN IN
+                <span className="hidden md:inline">SIGN IN</span>
               </Link>
             </>
           )

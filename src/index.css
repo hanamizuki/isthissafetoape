@@ -96,7 +96,7 @@
 }
 
 @layer components {
-  /* CRT scanline overlay */
+  /* CRT scanline overlay — disabled on mobile to save a full-screen compositing layer */
   .scanlines::after {
     content: '';
     position: fixed;
@@ -112,12 +112,28 @@
     );
   }
 
+  /* Disable scanline overlay on mobile to save a full-screen compositing layer */
+  @media (max-width: 767px) {
+    .scanlines::after {
+      display: none;
+    }
+  }
+
   /* Neon glow text — uses CSS custom property RGB channels */
   .neon-text-cyan {
     text-shadow:
       0 0 7px rgba(var(--neon-cyan-rgb), 0.7),
       0 0 20px rgba(var(--neon-cyan-rgb), 0.4),
       0 0 40px rgba(var(--neon-cyan-rgb), 0.2);
+  }
+
+  @media (max-width: 767px) {
+    .neon-text-cyan,
+    .neon-text-green,
+    .neon-text-pink,
+    .neon-text-yellow {
+      text-shadow: 0 0 7px currentColor;
+    }
   }
 
   .neon-text-green {
