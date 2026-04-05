@@ -437,16 +437,15 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
   return (
     <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">
+        <div className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">
           TAKE THIS TO YOUR AI AGENT
         </div>
         <button
           onClick={handleCopy}
           aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
-          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+          className="flex items-center p-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400"
         >
-          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-          <span className="font-pixel-sm text-[7px]">{copied ? "COPIED" : "COPY PROMPT"}</span>
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
       </div>
       <p className="text-xs text-muted-foreground mb-3">
