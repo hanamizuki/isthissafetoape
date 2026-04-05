@@ -354,25 +354,26 @@ function generateDeepDivePrompt(report: RiskReport): string {
     lines.push("")
   }
 
-  // Section 2: Dynamic deep-dive suggestions based on weak areas
-  const suggestions: string[] = []
+  // Section 2: Dynamic deep-dive suggestions based on weak areas.
+  // Use a Set to avoid duplicate suggestions when multiple categories match the same keyword.
+  const suggestions = new Set<string>()
 
   for (const cat of report.categories) {
     const pct = cat.maxScore > 0 ? (cat.score / cat.maxScore) * 100 : 0
     const name = cat.name.toLowerCase()
     if (pct < 60) {
       if (name.includes("contract") || name.includes("security")) {
-        suggestions.push("Smart Contract & Security scored low — look up audit reports, check for known vulnerabilities on this protocol, and verify multisig/timelock configurations.")
+        suggestions.add("Smart Contract & Security scored low — look up audit reports, check for known vulnerabilities on this protocol, and verify multisig/timelock configurations.")
       } else if (name.includes("economic") || name.includes("financial")) {
-        suggestions.push("Economic & Financial scored low — analyze the tokenomics, unlock schedule, liquidity depth, and whether the yield sources are sustainable.")
+        suggestions.add("Economic & Financial scored low — analyze the tokenomics, unlock schedule, liquidity depth, and whether the yield sources are sustainable.")
       } else if (name.includes("governance") || name.includes("transparency")) {
-        suggestions.push("Governance & Transparency scored low — investigate governance proposal history, voting concentration, and how transparent the team is with financials.")
+        suggestions.add("Governance & Transparency scored low — investigate governance proposal history, voting concentration, and how transparent the team is with financials.")
       } else if (name.includes("infrastructure")) {
-        suggestions.push("Infrastructure Risk scored low — check oracle dependencies, bridge/cross-chain exposure, and frontend security posture.")
+        suggestions.add("Infrastructure Risk scored low — check oracle dependencies, bridge/cross-chain exposure, and frontend security posture.")
       } else if (name.includes("fundamental") || name.includes("project")) {
-        suggestions.push("Project Fundamentals scored low — research the team background, track record, project milestones, and regulatory compliance status.")
+        suggestions.add("Project Fundamentals scored low — research the team background, track record, project milestones, and regulatory compliance status.")
       } else if (name.includes("market") || name.includes("operation")) {
-        suggestions.push("Market & Operations scored low — evaluate market position relative to competitors, growth sustainability, and key partner dependencies.")
+        suggestions.add("Market & Operations scored low — evaluate market position relative to competitors, growth sustainability, and key partner dependencies.")
       }
     }
   }
@@ -381,17 +382,18 @@ function generateDeepDivePrompt(report: RiskReport): string {
   const hasCritical = report.redFlags.some(f => f.severity === "critical")
   const hasHigh = report.redFlags.some(f => f.severity === "high")
   if (hasCritical || hasHigh) {
-    suggestions.push("There are critical/high-severity red flags — verify each one against the latest on-chain data and project announcements to confirm they are still current.")
+    suggestions.add("There are critical/high-severity red flags — verify each one against the latest on-chain data and project announcements to confirm they are still current.")
   }
 
-  // Overall risk suggestion
-  if (report.totalScore < 40) {
-    suggestions.push("The overall score is very low — consider researching safer alternatives in the same category and compare their risk profiles.")
+  // Overall risk suggestion — use percentage so the threshold works regardless of maxScore
+  const totalPct = report.maxScore > 0 ? (report.totalScore / report.maxScore) * 100 : 100
+  if (totalPct < 40) {
+    suggestions.add("The overall score is very low — consider researching safer alternatives in the same category and compare their risk profiles.")
   }
 
   // Fallback if no specific weak areas
-  if (suggestions.length === 0) {
-    suggestions.push("The initial assessment looks relatively positive — verify the key claims (audit status, team identity, TVL figures) are accurate and up to date.")
+  if (suggestions.size === 0) {
+    suggestions.add("The initial assessment looks relatively positive — verify the key claims (audit status, team identity, TVL figures) are accurate and up to date.")
   }
 
   lines.push("## Suggested Deep-Dive Areas")
