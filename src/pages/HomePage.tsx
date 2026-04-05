@@ -57,11 +57,9 @@ function HomePage() {
               <span className="font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
                 FREE &middot; 3/DAY
               </span>
-              <Link to="/auth">
-                <Button variant="outline" className="font-pixel-sm text-[8px] h-10 px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
-                  <LogIn className="h-3 w-3 mr-1.5" />
-                  SIGN IN
-                </Button>
+              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] h-10 px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+                <LogIn className="h-3 w-3" />
+                SIGN IN
               </Link>
             </>
           )
