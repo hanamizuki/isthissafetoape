@@ -38,7 +38,7 @@ function HomePage() {
         {!authLoading && (
           user ? (
             <>
-              <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history">
+              <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history" aria-label="Scan history">
                 <Clock className="h-4 w-4" />
               </Link>
               <span className="font-pixel-sm text-[7px] text-emerald-400/70 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
@@ -48,6 +48,7 @@ function HomePage() {
                 onClick={() => signOut()}
                 className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors"
                 title="Sign out"
+                aria-label="Sign out"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -57,7 +58,7 @@ function HomePage() {
               <span className="font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
                 FREE &middot; 3/DAY
               </span>
-              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] h-10 px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                 <LogIn className="h-3 w-3" />
                 SIGN IN
               </Link>
