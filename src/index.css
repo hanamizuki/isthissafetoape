@@ -203,6 +203,15 @@
     0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
     20%, 24%, 55% { opacity: 0.6; }
   }
+
+  /* Breathe animation — gentle opacity pulse for subtle "alive" feel.
+     Values match tailwind.config.js; duplicated here so the @keyframes
+     is guaranteed to exist even when only our custom @media gate below
+     references the animation (outside Tailwind's generated output). */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.85; }
+  }
 }
 
 /* Gate all animations behind reduced-motion preference.

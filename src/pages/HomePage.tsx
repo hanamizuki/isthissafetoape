@@ -180,7 +180,7 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
     : scan.risk_level ? "text-pink-400"
     : "text-muted-foreground"
 
-  const timeAgo = getTimeAgo(scan.created_at)
+  const timeAgo = getTimeAgo(scan.created_at, true)
 
   return (
     <button
