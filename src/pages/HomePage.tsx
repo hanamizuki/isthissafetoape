@@ -66,7 +66,7 @@ function HomePage() {
                 </>
               ) : (
                 <>
-                  <span className="font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
+                  <span className="hidden md:inline font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
                     FREE &middot; 3/DAY
                   </span>
                   <Link to="/auth">
