@@ -62,9 +62,11 @@ async function searchWithBrave(hostname: string): Promise<string[]> {
         // Extract pre-compiled snippets from Brave's grounding response
         const snippets: string[] = [];
         for (const item of data?.grounding?.generic || []) {
+          // Include source URL for credibility context
+          const source = item?.url ? ` (Source: ${item.url})` : "";
           for (const s of item?.snippets || []) {
             if (typeof s === "string" && s.length > 0) {
-              snippets.push(s);
+              snippets.push(`${s}${source}`);
             }
           }
         }
