@@ -81,7 +81,7 @@
 }
 
 @layer components {
-  /* CRT scanline overlay */
+  /* CRT scanline overlay — disabled on mobile to save a full-screen compositing layer */
   .scanlines::after {
     content: '';
     position: fixed;
@@ -97,12 +97,27 @@
     );
   }
 
-  /* Neon glow text */
+  @media (max-width: 767px) {
+    .scanlines::after {
+      display: none;
+    }
+  }
+
+  /* Neon glow text — reduced to 1 layer on mobile to cut rasterization cost */
   .neon-text-cyan {
     text-shadow:
       0 0 7px rgba(34, 211, 238, 0.7),
       0 0 20px rgba(34, 211, 238, 0.4),
       0 0 40px rgba(34, 211, 238, 0.2);
+  }
+
+  @media (max-width: 767px) {
+    .neon-text-cyan,
+    .neon-text-green,
+    .neon-text-pink,
+    .neon-text-yellow {
+      text-shadow: 0 0 7px currentColor;
+    }
   }
 
   .neon-text-green {

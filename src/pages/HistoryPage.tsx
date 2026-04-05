@@ -79,9 +79,10 @@ function HistoryPage() {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden scanlines">
-      <div className="absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
+      {/* Blur orb — hidden on mobile to reduce GPU compositing cost */}
+      <div className="hidden md:block absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
 
-      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background/90 backdrop-blur-sm">
+      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <img src="/shield-logo.svg" alt="" className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
