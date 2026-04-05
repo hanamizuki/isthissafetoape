@@ -20,6 +20,7 @@ export function getTimeAgo(dateStr: string, compact = false): string {
   const hours = Math.floor(mins / 60)
   if (hours < 24) return compact ? `${hours}H` : `${hours}H AGO`
   const days = Math.floor(hours / 24)
-  if (days < 30) return compact ? `${days}D` : `${days}D AGO`
+  if (compact) return `${days}D`
+  if (days < 30) return `${days}D AGO`
   return date.toLocaleDateString()
 }
