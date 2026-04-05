@@ -210,15 +210,16 @@ Deno.serve(async (req) => {
         if (windowStart >= todayStart) {
           // Same day — check count
           if (rl.scan_count >= ANON_DAILY_LIMIT) {
-            return jsonResponse(
-              {
-                error: "Daily scan limit reached. Sign in for unlimited scans.",
-                rateLimited: true,
-                remaining: 0,
-                limit: ANON_DAILY_LIMIT,
-              },
-              429
-            );
+            // Return 200 with rateLimited flag instead of 429, because
+            // Supabase JS SDK wraps non-2xx into a generic error message
+            // and drops the response body, preventing the client from
+            // detecting rate-limit vs other failures.
+            return jsonResponse({
+              error: "Daily scan limit reached. Sign in for unlimited scans.",
+              rateLimited: true,
+              remaining: 0,
+              limit: ANON_DAILY_LIMIT,
+            });
           }
           // Increment count
           await adminClient
