@@ -102,6 +102,12 @@ function ReportPage() {
 function LoadingSkeleton() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="text-center mb-2">
+        <span className="font-pixel text-sm text-cyan-400 neon-text-cyan animate-blink">
+          SCANNING TARGET...
+        </span>
+        <p className="text-xs text-muted-foreground mt-2">AI is researching this project. This may take 10-20 seconds.</p>
+      </div>
       <div className="flex items-center gap-4 mb-8">
         <Skeleton className="w-20 h-20 bg-white/[0.04]" />
         <div className="space-y-2 flex-1">
@@ -112,12 +118,6 @@ function LoadingSkeleton() {
       <Skeleton className="h-24 w-full bg-white/[0.04]" />
       <div className="grid grid-cols-2 gap-4">
         {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 bg-white/[0.04]" />)}
-      </div>
-      <div className="text-center mt-8">
-        <span className="font-pixel text-sm text-cyan-400 neon-text-cyan animate-blink">
-          SCANNING TARGET...
-        </span>
-        <p className="text-xs text-muted-foreground mt-2">AI is researching this project. This may take 10-20 seconds.</p>
       </div>
     </div>
   )
