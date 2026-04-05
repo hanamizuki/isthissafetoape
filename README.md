@@ -18,6 +18,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 ## Features
 
 - **Web research** — fetches the target site via [Jina Reader](https://jina.ai/reader/) and searches external sources via [Brave Search API](https://brave.com/search/api/) before analysis
+- **Deep dive prompt** — generates a copyable prompt from the report so you can hand it to your own AI agent for deeper investigation, with dynamic suggestions based on weak scoring categories
 - Cyberpunk/retro pixel-art UI with neon glow effects
 - Shareable report links (`/report/:id`)
 - 24-hour scan caching per hostname
