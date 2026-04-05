@@ -28,12 +28,13 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden scanlines">
-      {/* Neon glow orbs */}
-      <div className="absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
+      {/* Neon glow orbs — hidden on mobile to avoid GPU-heavy blur compositing */}
+      <div className="hidden md:block absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
+      <div className="hidden md:block absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background/90 backdrop-blur-sm">
+      {/* Opaque bg on mobile to skip backdrop-blur compositing; translucent + blur on desktop */}
+      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/logo.png" alt="" className="h-8 w-8 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
@@ -70,8 +71,8 @@ function HomePage() {
                   </span>
                   <Link to="/auth">
                     <Button variant="outline" className="font-pixel-sm text-[8px] h-8 px-3 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
-                      <LogIn className="h-3 w-3 mr-1.5" />
-                      SIGN IN
+                      <LogIn className="h-3 w-3 md:mr-1.5" />
+                      <span className="hidden md:inline">SIGN IN</span>
                     </Button>
                   </Link>
                 </>

@@ -24,3 +24,4 @@ todos/
 .playwright-mcp/
 test-results/
 playwright-report/
+.gstack/
