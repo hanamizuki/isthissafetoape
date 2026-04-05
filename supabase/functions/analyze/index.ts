@@ -136,26 +136,27 @@ Deno.serve(async (req) => {
       hostname = parsed.hostname;
 
       // SSRF protection: block private/internal IP ranges, localhost, and private IPv6
-      const lower = hostname.toLowerCase();
+      const lower = hostname.toLowerCase().replace(/\.$/, ""); // strip trailing dot
+      const isIpv6 = lower.includes(":");
       const bare = lower.replace(/^\[|\]$/g, ""); // strip brackets from IPv6
       const isPrivate =
         lower === "localhost" ||
-        lower === "localhost." ||
         lower.endsWith(".localhost") ||
         lower === "0.0.0.0" ||
         lower.endsWith(".local") ||
-        // IPv4 private ranges
-        /^127\.\d+\.\d+\.\d+$/.test(hostname) ||
-        /^10\.\d+\.\d+\.\d+$/.test(hostname) ||
-        /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(hostname) ||
-        /^192\.168\.\d+\.\d+$/.test(hostname) ||
-        /^169\.254\.\d+\.\d+$/.test(hostname) ||
-        // IPv6: loopback, unique local (fc00::/7), link-local (fe80::/10),
-        // IPv4-mapped (::ffff:x.x.x.x)
-        bare === "::1" ||
-        /^fc/.test(bare) || /^fd/.test(bare) ||
-        /^fe[89ab]/.test(bare) ||
-        /^::ffff:/i.test(bare);
+        // IPv4 private ranges (trailing dot already stripped)
+        /^127\.\d+\.\d+\.\d+$/.test(lower) ||
+        /^10\.\d+\.\d+\.\d+$/.test(lower) ||
+        /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(lower) ||
+        /^192\.168\.\d+\.\d+$/.test(lower) ||
+        /^169\.254\.\d+\.\d+$/.test(lower) ||
+        // IPv6 checks: only apply when hostname is an IPv6 literal (contains :)
+        (isIpv6 && (
+          bare === "::1" ||
+          /^fc/.test(bare) || /^fd/.test(bare) ||
+          /^fe[89ab]/.test(bare) ||
+          /^::ffff:/i.test(bare)
+        ));
 
       if (isPrivate) {
         return jsonResponse({ error: "Private/internal URLs are not allowed" }, 400);
