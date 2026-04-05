@@ -52,7 +52,7 @@ function ReportPage() {
 
       <Header />
 
-      <main className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
+      <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" />
           <span className="font-pixel-sm text-[8px]">NEW SCAN</span>

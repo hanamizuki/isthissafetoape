@@ -7,7 +7,15 @@ import { Link } from "react-router-dom"
  */
 export function Header({ children }: { children?: React.ReactNode }) {
   return (
-    <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background/90 backdrop-blur-sm">
+    <>
+      {/* Skip navigation link — visually hidden until focused */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-cyan-500 focus:text-background focus:font-pixel focus:text-sm"
+      >
+        Skip to main content
+      </a>
+      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background/90 backdrop-blur-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <img src="/shield-logo.svg" alt="" className="h-7 w-7 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
@@ -30,5 +38,6 @@ export function Header({ children }: { children?: React.ReactNode }) {
         </div>
       </div>
     </header>
+    </>
   )
 }

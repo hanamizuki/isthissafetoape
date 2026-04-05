@@ -69,7 +69,7 @@ function HomePage() {
       </Header>
 
       {/* Hero */}
-      <main className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
+      <main id="main-content" className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
         <div className="text-center space-y-5 mb-12">
           <h1 className="font-pixel text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
             Don&apos;t trust.
