@@ -190,7 +190,7 @@ function ReportContent({ report }: { report: RiskReport }) {
       </div>
 
       <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
-        <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider mb-2">TL;DR</div>
+        <h2 className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider mb-2">TL;DR</h2>
         <p className="text-sm text-foreground leading-relaxed">{report.tldr}</p>
       </div>
 
@@ -198,9 +198,9 @@ function ReportContent({ report }: { report: RiskReport }) {
         <div className="border-2 border-pink-500/25 bg-pink-500/[0.03] p-5 neon-box-pink">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="h-4 w-4 text-pink-400" />
-            <span className="font-pixel text-sm font-bold text-pink-400 neon-text-pink">
+            <h2 className="font-pixel text-sm font-bold text-pink-400 neon-text-pink">
               RED FLAGS ({report.redFlags.length})
-            </span>
+            </h2>
           </div>
           <div className="space-y-3">
             {report.redFlags.map((flag, i) => (
@@ -214,7 +214,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         <div className="border-2 border-emerald-500/25 bg-emerald-500/[0.03] p-5 neon-box-green">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            <span className="font-pixel text-sm font-bold text-emerald-400 neon-text-green">POSITIVE SIGNALS</span>
+            <h2 className="font-pixel text-sm font-bold text-emerald-400 neon-text-green">POSITIVE SIGNALS</h2>
           </div>
           <ul className="space-y-1.5">
             {report.positives.map((p, i) => (
@@ -229,7 +229,7 @@ function ReportContent({ report }: { report: RiskReport }) {
 
       {report.categories && (
         <div>
-          <div className="font-pixel-sm text-[8px] text-muted-foreground tracking-widest mb-3">DETAILED BREAKDOWN</div>
+          <h2 className="font-pixel-sm text-[8px] text-muted-foreground tracking-widest mb-3">DETAILED BREAKDOWN</h2>
           <div className="space-y-3">
             {report.categories.map((cat, i) => (
               <CategoryCard key={i} category={cat} />
@@ -426,9 +426,9 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
   return (
     <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">
+        <h2 className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">
           TAKE THIS TO YOUR AI AGENT
-        </div>
+        </h2>
         <button
           onClick={handleCopy}
           aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
