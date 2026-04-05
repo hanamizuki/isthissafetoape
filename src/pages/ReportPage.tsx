@@ -319,6 +319,10 @@ function RedFlagItem({ flag }: { flag: RedFlag }) {
 // suggestions based on which categories scored low or had red flags.
 function generateDeepDivePrompt(report: RiskReport): string {
   const lines: string[] = []
+  // Default missing arrays — report is runtime JSON so fields may be absent
+  const categories = report.categories ?? []
+  const redFlags = report.redFlags ?? []
+  const positives = report.positives ?? []
 
   // Section 1: Initial assessment summary
   lines.push(`I used IsThisSafeToApe.com to run an initial risk assessment on ${report.projectName} (${report.projectUrl}).`)
@@ -331,24 +335,24 @@ function generateDeepDivePrompt(report: RiskReport): string {
 
   // Category scores
   lines.push("Category Scores:")
-  for (const cat of report.categories) {
+  for (const cat of categories) {
     lines.push(`- ${cat.name}: ${cat.score}/${cat.maxScore} — ${cat.summary}`)
   }
   lines.push("")
 
   // Red flags
-  if (report.redFlags.length > 0) {
+  if (redFlags.length > 0) {
     lines.push("Red Flags:")
-    for (const flag of report.redFlags) {
+    for (const flag of redFlags) {
       lines.push(`- [${flag.severity.toUpperCase()}] ${flag.title}: ${flag.description}`)
     }
     lines.push("")
   }
 
   // Positives
-  if (report.positives.length > 0) {
+  if (positives.length > 0) {
     lines.push("Positive Signals:")
-    for (const p of report.positives) {
+    for (const p of positives) {
       lines.push(`- ${p}`)
     }
     lines.push("")
@@ -358,7 +362,7 @@ function generateDeepDivePrompt(report: RiskReport): string {
   // Use a Set to avoid duplicate suggestions when multiple categories match the same keyword.
   const suggestions = new Set<string>()
 
-  for (const cat of report.categories) {
+  for (const cat of categories) {
     const pct = cat.maxScore > 0 ? (cat.score / cat.maxScore) * 100 : 0
     const name = cat.name.toLowerCase()
     if (pct < 60) {
@@ -379,8 +383,8 @@ function generateDeepDivePrompt(report: RiskReport): string {
   }
 
   // Red flag specific suggestions
-  const hasCritical = report.redFlags.some(f => f.severity === "critical")
-  const hasHigh = report.redFlags.some(f => f.severity === "high")
+  const hasCritical = redFlags.some(f => f.severity === "critical")
+  const hasHigh = redFlags.some(f => f.severity === "high")
   if (hasCritical || hasHigh) {
     suggestions.add("There are critical/high-severity red flags — verify each one against the latest on-chain data and project announcements to confirm they are still current.")
   }
