@@ -78,6 +78,11 @@
     font-family: var(--font-body);
     image-rendering: pixelated;
   }
+
+  /* Keyboard focus indicator for all interactive elements */
+  :focus-visible {
+    @apply outline-none ring-2 ring-cyan-500 ring-offset-2 ring-offset-background;
+  }
 }
 
 @layer components {
