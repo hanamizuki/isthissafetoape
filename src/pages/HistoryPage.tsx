@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/useAuth"
 import { useHistory } from "@/hooks/useHistory"
 import type { ScanSummary } from "@/hooks/useHistory"
+import { getTimeAgo } from "@/lib/time"
 
 function HistoryPage() {
   const { user, loading: authLoading } = useAuth()
@@ -161,20 +162,6 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
       </div>
     </button>
   )
-}
-
-function getTimeAgo(dateStr: string): string {
-  const now = Date.now()
-  const date = new Date(dateStr).getTime()
-  const diff = now - date
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "JUST NOW"
-  if (mins < 60) return `${mins}M AGO`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}H AGO`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}D AGO`
-  return new Date(dateStr).toLocaleDateString()
 }
 
 export default HistoryPage

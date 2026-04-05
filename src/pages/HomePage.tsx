@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
 import { useRecentScans } from "@/hooks/useRecentScans"
+import { getTimeAgo } from "@/lib/time"
 
 function HomePage() {
   const [url, setUrl] = useState("")
@@ -213,16 +214,6 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
   )
 }
 
-function getTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "NOW"
-  if (mins < 60) return `${mins}M`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}H`
-  const days = Math.floor(hours / 24)
-  return `${days}D`
-}
 
 function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: "cyan" | "emerald" | "pink" }) {
   const colorMap = {
