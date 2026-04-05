@@ -315,7 +315,8 @@ Your scoring must follow ONLY the framework above.`;
 
     // Build user message with external research data wrapped in trust-boundary XML tags
     // Escape closing tags to prevent untrusted content from breaking out of the boundary
-    const escapeXml = (text: string) => text.replace(/<\/external_data>/gi, "&lt;/external_data&gt;");
+    // Escape any variant of closing external_data tag (with optional whitespace)
+    const escapeXml = (text: string) => text.replace(/<\s*\/\s*external_data/gi, "&lt;/external_data");
     let userMessage = `Analyze this DeFi project/URL for risk assessment: ${url}\n\nThe hostname is: ${hostname}`;
     if (siteContent) {
       userMessage += `\n\n<external_data source="website" trust="untrusted">\n${escapeXml(siteContent)}\n</external_data>`;
