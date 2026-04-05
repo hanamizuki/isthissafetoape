@@ -53,7 +53,7 @@ function ReportPage() {
       <Header />
 
       <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
+        <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" />
           <span className="font-pixel-sm text-[8px]">NEW SCAN</span>
         </Link>
@@ -62,8 +62,8 @@ function ReportPage() {
           <div className="flex items-center gap-2 text-sm mb-8 border-2 border-cyan-500/15 bg-card/50 px-4 py-2.5">
             <span className="font-pixel-sm text-[7px] text-cyan-500/50">TARGET:</span>
             <span className="text-foreground truncate font-mono text-xs">{displayUrl}</span>
-            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 text-muted-foreground hover:text-cyan-400 transition-colors">
-              <ExternalLink className="h-3.5 w-3.5" />
+            <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors">
+              <ExternalLink className="h-4 w-4" />
             </a>
           </div>
         )}
@@ -147,7 +147,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
       <span className="font-pixel-sm text-[7px] text-muted-foreground/60 mr-1">SHARE:</span>
       <button
         onClick={copyLink}
-        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
       >
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
         <span className="font-pixel-sm text-[7px]">{copied ? "COPIED" : "LINK"}</span>
@@ -156,7 +156,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
         href={twitterUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
       >
         <XIcon className="h-3 w-3" />
         <span className="font-pixel-sm text-[7px]">POST</span>
@@ -432,7 +432,7 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
         <button
           onClick={handleCopy}
           aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
-          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+          className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
           <span className="font-pixel-sm text-[7px]">{copied ? "COPIED" : "COPY PROMPT"}</span>
