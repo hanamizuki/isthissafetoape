@@ -249,6 +249,8 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       )}
 
+      <DeepDivePrompt report={report} />
+
       <div className="text-center font-pixel-sm text-[7px] text-muted-foreground/40 pt-4 pb-8 tracking-wider">
         SCAN COMPLETE {new Date(report.analyzedAt).toLocaleString()} &middot; AI-POWERED &middot; NFA
       </div>
@@ -308,6 +310,144 @@ function RedFlagItem({ flag }: { flag: RedFlag }) {
         <div className="text-sm font-semibold text-foreground">{flag.title}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{flag.description}</div>
       </div>
+    </div>
+  )
+}
+
+// Build a prompt from the report data so users can hand it to their own AI agent
+// for deeper investigation. The prompt includes our analysis summary plus dynamic
+// suggestions based on which categories scored low or had red flags.
+function generateDeepDivePrompt(report: RiskReport): string {
+  const lines: string[] = []
+
+  // Section 1: Initial assessment summary
+  lines.push(`I used IsThisSafeToApe.com to run an initial risk assessment on ${report.projectName} (${report.projectUrl}).`)
+  lines.push("")
+  lines.push("## Initial Assessment")
+  lines.push("")
+  lines.push(`- Overall Score: ${report.totalScore}/${report.maxScore} (${report.riskLabel})`)
+  lines.push(`- Verdict: ${report.tldr}`)
+  lines.push("")
+
+  // Category scores
+  lines.push("Category Scores:")
+  for (const cat of report.categories) {
+    lines.push(`- ${cat.name}: ${cat.score}/${cat.maxScore} — ${cat.summary}`)
+  }
+  lines.push("")
+
+  // Red flags
+  if (report.redFlags.length > 0) {
+    lines.push("Red Flags:")
+    for (const flag of report.redFlags) {
+      lines.push(`- [${flag.severity.toUpperCase()}] ${flag.title}: ${flag.description}`)
+    }
+    lines.push("")
+  }
+
+  // Positives
+  if (report.positives.length > 0) {
+    lines.push("Positive Signals:")
+    for (const p of report.positives) {
+      lines.push(`- ${p}`)
+    }
+    lines.push("")
+  }
+
+  // Section 2: Dynamic deep-dive suggestions based on weak areas
+  const suggestions: string[] = []
+
+  for (const cat of report.categories) {
+    const pct = (cat.score / cat.maxScore) * 100
+    const name = cat.name.toLowerCase()
+    if (pct < 60) {
+      if (name.includes("contract") || name.includes("security")) {
+        suggestions.push("Smart Contract & Security scored low — look up audit reports, check for known vulnerabilities on this protocol, and verify multisig/timelock configurations.")
+      } else if (name.includes("economic") || name.includes("financial")) {
+        suggestions.push("Economic & Financial scored low — analyze the tokenomics, unlock schedule, liquidity depth, and whether the yield sources are sustainable.")
+      } else if (name.includes("governance") || name.includes("transparency")) {
+        suggestions.push("Governance & Transparency scored low — investigate governance proposal history, voting concentration, and how transparent the team is with financials.")
+      } else if (name.includes("infrastructure")) {
+        suggestions.push("Infrastructure Risk scored low — check oracle dependencies, bridge/cross-chain exposure, and frontend security posture.")
+      } else if (name.includes("fundamental") || name.includes("project")) {
+        suggestions.push("Project Fundamentals scored low — research the team background, track record, project milestones, and regulatory compliance status.")
+      } else if (name.includes("market") || name.includes("operation")) {
+        suggestions.push("Market & Operations scored low — evaluate market position relative to competitors, growth sustainability, and key partner dependencies.")
+      }
+    }
+  }
+
+  // Red flag specific suggestions
+  const hasCritical = report.redFlags.some(f => f.severity === "critical")
+  const hasHigh = report.redFlags.some(f => f.severity === "high")
+  if (hasCritical || hasHigh) {
+    suggestions.push("There are critical/high-severity red flags — verify each one against the latest on-chain data and project announcements to confirm they are still current.")
+  }
+
+  // Overall risk suggestion
+  if (report.totalScore < 40) {
+    suggestions.push("The overall score is very low — consider researching safer alternatives in the same category and compare their risk profiles.")
+  }
+
+  // Fallback if no specific weak areas
+  if (suggestions.length === 0) {
+    suggestions.push("The initial assessment looks relatively positive — verify the key claims (audit status, team identity, TVL figures) are accurate and up to date.")
+  }
+
+  lines.push("## Suggested Deep-Dive Areas")
+  lines.push("")
+  for (const s of suggestions) {
+    lines.push(`- ${s}`)
+  }
+  lines.push("")
+
+  // Section 3: Action framework for the AI agent
+  lines.push("## What I Need You To Do")
+  lines.push("")
+  lines.push("1. Verify the accuracy of this assessment — is any of the information outdated or incorrect?")
+  lines.push("2. Investigate the deep-dive areas listed above in detail.")
+  lines.push("3. Provide your independent risk evaluation — do you agree with the scoring? Are there risks not covered here?")
+  lines.push("4. Give actionable recommendations — what should I watch out for if I decide to participate in this project?")
+
+  return lines.join("\n")
+}
+
+// Copyable text box that renders the deep-dive prompt for users to take to their AI agent
+function DeepDivePrompt({ report }: { report: RiskReport }) {
+  const [copied, setCopied] = useState(false)
+  const prompt = generateDeepDivePrompt(report)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt)
+      setCopied(true)
+      toast.success("Prompt copied!")
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error("Failed to copy")
+    }
+  }
+
+  return (
+    <div className="border-2 border-cyan-500/15 bg-card/50 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">
+          TAKE THIS TO YOUR AI AGENT
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          <span className="font-pixel-sm text-[7px]">{copied ? "COPIED" : "COPY PROMPT"}</span>
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        Copy this prompt and paste it into your favorite AI assistant for a deeper, independent analysis.
+      </p>
+      <pre className="text-xs text-muted-foreground/80 bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed">
+        {prompt}
+      </pre>
     </div>
   )
 }
