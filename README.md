@@ -30,7 +30,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **UI Components**: shadcn/ui (Radix primitives)
 - **Backend**: Supabase Edge Functions (Deno)
-- **AI**: Claude (Haiku 4.5) via Anthropic SDK, with web research (Jina Reader + Brave Search)
+- **AI**: OpenRouter (primary: `inclusionai/ring-2.6-1t:free`, fallbacks: `anthropic/claude-haiku-4.5`, `google/gemini-2.5-flash`) via OpenAI-compatible SDK, with web research (Jina Reader + Brave Search)
 - **Database**: Supabase (PostgreSQL)
 - **Deployment**: Vercel (frontend) + Supabase (backend)
 
@@ -60,7 +60,7 @@ bun run dev
    ```
 4. Set edge function secrets:
    ```bash
-   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+   supabase secrets set OPENROUTER_API_KEY=sk-or-...
    supabase secrets set JINA_API_KEY=jina_...
    supabase secrets set BRAVE_SEARCH_API_KEY=...
    ```
