@@ -379,6 +379,17 @@ Your scoring must follow ONLY the framework above.`;
       return jsonResponse({ error: "Failed to parse AI response" }, 500);
     }
 
+    // Guard against JSON primitives (string, number, null) or arrays — JSON.parse
+    // succeeds for these but they don't match the expected report shape, and every
+    // downstream property assignment + DB insert below would throw or write nonsense.
+    if (!report || typeof report !== "object" || Array.isArray(report)) {
+      console.error("[analyze] AI response parsed but is not an object", {
+        type: typeof report,
+        responseLength: responseText.length,
+      });
+      return jsonResponse({ error: "Failed to parse AI response" }, 500);
+    }
+
     report.projectUrl = url;
     // Always overwrite analyzedAt with the server-side timestamp. Some models (notably
     // older or free-tier ones) hallucinate dates from their training cutoff, so trusting
