@@ -1,6 +1,6 @@
 # Related Protocols & Security Alerts
 
-Status: approved design, pending implementation
+Status: implemented (PRs 1-4 shipped)
 Scope: two features — (1) supply-chain "related protocols" on risk reports, (2) per-protocol security alert subscriptions with email notifications fed by an external X (Twitter) scraper.
 
 ## 1. Feature: Related Protocols on Reports
