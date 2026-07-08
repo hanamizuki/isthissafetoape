@@ -173,7 +173,7 @@ There are no drop shadows. This is a flat, sharp-cornered system where depth is 
 ### Shadow Vocabulary
 - **Cyan Glow** (`neon-box-cyan`: `0 0 5px rgba(34,211,238,.3), 0 0 15px rgba(34,211,238,.15), inset 0 0 10px rgba(34,211,238,.05)`): the default "this box is alive" treatment on primary panels and the search bar.
 - **Green / Pink Glow** (`neon-box-green` / `neon-box-pink`): same recipe in Safe Green and Danger Pink — positive-signal and red-flag panels announce their verdict through their glow color.
-- **Text Bloom** (`neon-text-*`: layered `text-shadow` at 7/20/40px): phosphor bleed on headings, scores, and the wordmark. Reduced to a single 7px shadow on mobile to save compositing.
+- **Text Bloom** (`neon-text-*`: layered `text-shadow` at 6/15/28px): phosphor bleed on headings, scores, and the wordmark. Reduced to a single 4px shadow on mobile to save compositing.
 - **Ambient Orbs**: large radial `blur-[120px]` cyan/emerald fields bled off the viewport corners (desktop only) — the cabinet's backlight.
 - **CTA Cast** (`shadow-[0_0_15px_rgba(34,211,238,0.4)]` → `0_0_25px…0.6` on hover): the SCAN button throws cyan light onto the glass and throws more when you reach for it.
 
