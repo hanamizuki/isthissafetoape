@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from "react"
-import { useSearchParams, useParams, Link } from "react-router-dom"
-import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network } from "lucide-react"
+import { useSearchParams, useParams, useNavigate, useLocation, Link } from "react-router-dom"
+import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAnalyze } from "@/hooks/useAnalyze"
 import { useScan } from "@/hooks/useScan"
+import { useAuth } from "@/hooks/useAuth"
+import { useSubscriptions } from "@/hooks/useSubscriptions"
 import { toast } from "sonner"
 import type { RiskReport, CategoryScore, RedFlag, RelatedProtocol } from "@/types/risk"
+import type { User } from "@supabase/supabase-js"
 
 function ReportPage() {
   const [searchParams] = useSearchParams()
@@ -177,14 +180,76 @@ function XIcon({ className }: { className?: string }) {
   )
 }
 
+// Canonical subscription key: the resolved DeFiLlama slug, else the lowercased name. Must stay
+// in lockstep with the migration and PR 4's email builder.
+const subKeyOf = (slug: string | undefined, name: string) => slug ?? name.toLowerCase()
+
+// Subscribe bell for one protocol (the primary header + each related row). Logged-in users
+// toggle a subscription; anonymous users are routed to /auth first and returned here after
+// login. `user` is resolved once by ReportContent and drilled down, so the bell makes no auth
+// round-trip of its own.
+function SubscribeBell({ subKey, name, user, authLoading }: { subKey: string; name: string; user: User | null; authLoading: boolean }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { subscribed, toggle, isLoading } = useSubscriptions(user?.id)
+  const isOn = subscribed.has(subKey)
+  // While auth is still resolving, a logged-in user's session may not have loaded yet, so the
+  // bell stays disabled (below) — otherwise a click would be misrouted to /auth as if anonymous.
+
+  const handleClick = () => {
+    if (!user) {
+      navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
+    toggle.mutate(
+      { key: subKey, name },
+      {
+        onError: () => toast.error("Couldn't update subscription — try again."),
+        onSuccess: () =>
+          isOn
+            ? toast.success(`Unfollowed ${name}`)
+            : toast.success(`Following ${name} — we'll email you on alerts`),
+      },
+    )
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={toggle.isPending || isLoading || authLoading}
+      aria-label={isOn ? `Unsubscribe from ${name} alerts` : `Subscribe to ${name} alerts`}
+      aria-pressed={isOn}
+      className={`flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0 border-2 transition-all disabled:opacity-50 ${
+        isOn
+          ? "border-cyan-400/40 bg-cyan-500/10 text-cyan-400"
+          : "border-white/[0.08] bg-white/[0.01] text-muted-foreground hover:border-cyan-400/30 hover:text-cyan-400"
+      }`}
+    >
+      <Bell className="h-4 w-4" fill={isOn ? "currentColor" : "none"} />
+    </button>
+  )
+}
+
 function ReportContent({ report }: { report: RiskReport }) {
+  // Resolve auth once here and drill `user` down to every bell — a report with k related
+  // protocols would otherwise spin up k+1 identical useAuth() getUser round-trips + listeners.
+  const { user, loading: authLoading } = useAuth()
+  // Subscription key for the primary protocol: the resolved DeFiLlama slug when present, else
+  // the lowercased name. primaryProtocol is absent on reports cached before PR 1 — fall back to
+  // projectName so the bell still works (the notify pipeline matches on name too).
+  const primaryName = report.primaryProtocol?.name ?? report.projectName
+  const primaryKey = subKeyOf(report.primaryProtocol?.slug, primaryName)
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex items-center gap-5">
           <PixelScoreGauge score={report.totalScore} maxScore={report.maxScore} riskLevel={report.riskLevel} />
           <div>
-            <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
+              <SubscribeBell subKey={primaryKey} name={primaryName} user={user} authLoading={authLoading} />
+            </div>
             <RiskBadge level={report.riskLevel} label={report.riskLabel} />
           </div>
         </div>
@@ -245,7 +310,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       )}
 
-      <RelatedProtocols report={report} />
+      <RelatedProtocols report={report} user={user} authLoading={authLoading} />
 
       <DeepDivePrompt report={report} />
 
@@ -481,7 +546,7 @@ function safeHttpUrl(url: string): string | undefined {
 
 // Supply-chain dependencies of the analyzed protocol. Hidden entirely when absent (old
 // cached reports) or empty. Each row can re-scan the dependency through the same flow.
-function RelatedProtocols({ report }: { report: RiskReport }) {
+function RelatedProtocols({ report, user, authLoading }: { report: RiskReport; user: User | null; authLoading: boolean }) {
   const related = report.relatedProtocols ?? []
   if (related.length === 0) return null
 
@@ -498,17 +563,18 @@ function RelatedProtocols({ report }: { report: RiskReport }) {
       </p>
       <div className="space-y-3">
         {related.map((p, i) => (
-          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} />
+          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} user={user} authLoading={authLoading} />
         ))}
       </div>
     </div>
   )
 }
 
-function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
+function RelatedProtocolRow({ protocol, user, authLoading }: { protocol: RelatedProtocol; user: User | null; authLoading: boolean }) {
   // Gate every link on a validated http(s) URL — protects reports cached before the
   // server-side scheme validation shipped.
   const site = protocol.website ? safeHttpUrl(protocol.website) : undefined
+  const subKey = subKeyOf(protocol.slug, protocol.name)
   return (
     <div className="border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/15 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -536,18 +602,21 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
             </a>
           )}
         </div>
-        {site && (
-          // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
-          // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
-          // is empty, so an in-app transition would keep showing the current report instead of
-          // scanning the dependency. asChild renders the <a> with the button's styling.
-          <Button
-            asChild
-            className="shrink-0 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
-          >
-            <a href={`/report?url=${encodeURIComponent(site)}`}>ANALYZE</a>
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <SubscribeBell subKey={subKey} name={protocol.name} user={user} authLoading={authLoading} />
+          {site && (
+            // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
+            // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
+            // is empty, so an in-app transition would keep showing the current report instead of
+            // scanning the dependency. asChild renders the <a> with the button's styling.
+            <Button
+              asChild
+              className="font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
+            >
+              <a href={`/report?url=${encodeURIComponent(site)}`}>ANALYZE</a>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )
