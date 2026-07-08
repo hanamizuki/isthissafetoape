@@ -19,6 +19,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 
 - **Web research** — fetches the target site via [Jina Reader](https://jina.ai/reader/) and searches external sources via [Brave Search API](https://brave.com/search/api/) before analysis
 - **Deep dive prompt** — generates a copyable prompt from the report so you can hand it to your own AI agent for deeper investigation, with dynamic suggestions based on weak scoring categories
+- **Related protocols** — each report maps the project's DeFi supply-chain dependencies (lending markets, stablecoin issuers, oracles, bridges), because a failure anywhere upstream endangers your funds. Official links are resolved from a trusted source ([DeFiLlama](https://defillama.com/), CoinGecko fallback) — never from the LLM, since a hallucinated URL is a phishing vector — and each dependency has a one-click re-scan
 - Cyberpunk/retro pixel-art UI with neon glow effects
 - Shareable report links (`/report/:id`)
 - 24-hour scan caching per hostname
@@ -54,15 +55,37 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge function:
+3. Deploy the edge functions. `refresh-protocols` guards itself with a shared secret, so
+   deploy it with JWT verification off (that header is the gate):
    ```bash
    supabase functions deploy analyze
+   supabase functions deploy refresh-protocols --no-verify-jwt
    ```
 4. Set edge function secrets:
    ```bash
    supabase secrets set OPENROUTER_API_KEY=sk-or-...
    supabase secrets set JINA_API_KEY=jina_...
    supabase secrets set BRAVE_SEARCH_API_KEY=...
+   supabase secrets set REFRESH_SECRET=$(openssl rand -hex 32)   # gates refresh-protocols
+   ```
+5. Populate and schedule the protocol directory (backs the related-protocols feature).
+   `refresh-protocols` is gated on `REFRESH_SECRET` sent as the `x-refresh-key` header, so
+   only the cron (or an operator) can trigger the multi-MB DeFiLlama fetch + upsert:
+   ```bash
+   # First population — call once with the shared secret:
+   curl -X POST 'https://<ref>.supabase.co/functions/v1/refresh-protocols' \
+     -H "x-refresh-key: <REFRESH_SECRET>"
+   ```
+   ```sql
+   -- Daily refresh via Supabase Cron (pg_cron + pg_net). Run in the SQL Editor:
+   select vault.create_secret('<REFRESH_SECRET>', 'refresh_secret');
+   select cron.schedule('refresh-protocols-daily', '0 3 * * *', $$
+     select net.http_post(
+       url     := 'https://<ref>.supabase.co/functions/v1/refresh-protocols',
+       headers := jsonb_build_object(
+         'x-refresh-key', (select decrypted_secret from vault.decrypted_secrets where name = 'refresh_secret'),
+         'Content-Type', 'application/json')
+     ) $$);
    ```
 
 ## License
