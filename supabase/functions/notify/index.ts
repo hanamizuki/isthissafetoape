@@ -262,10 +262,13 @@ Deno.serve(async (req) => {
     // For each fresh post, check if content contains any keyword
     const postMatches: { post: SecurityPost; matchedProtocols: SubscribedProtocol[] }[] = [];
     for (const post of freshPosts) {
-      const contentLower = post.content.toLowerCase();
+      // Search content + author + source_account so protocol handle matches work even
+      // when the post body doesn't mention the protocol name (e.g. @aave posts "We are
+      // investigating an exploit..." without saying "Aave" in the text).
+      const searchText = `${post.content}\n${post.author}\n${post.source_account}`.toLowerCase();
       const matched = new Map<number, SubscribedProtocol>(); // subscription_id → protocol (dedup)
       for (const kw of allKeywords) {
-        if (contentLower.includes(kw)) {
+        if (searchText.includes(kw)) {
           for (const p of keywordToProtocols.get(kw)!) {
             matched.set(p.subscription_id, p);
           }
