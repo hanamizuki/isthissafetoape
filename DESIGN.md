@@ -19,7 +19,7 @@ colors:
 typography:
   display:
     fontFamily: "Pixelify Sans, Press Start 2P, monospace"
-    fontSize: "2.25rem–3.75rem"
+    fontSize: "2.25rem–5rem"
     fontWeight: 700
     lineHeight: 1.1
     letterSpacing: "normal"
@@ -154,7 +154,7 @@ The four-stop scale that colors every score, gauge segment, risk badge, and red-
 **Character:** A hard contrast pairing, not a subtle one: chunky pixel display against a clean geometric-humanist sans. Pixelify Sans is the cabinet's grinning voice; Space Grotesk is the plain-spoken analyst. They never blur into each other because they share nothing — which is exactly why the pairing works.
 
 ### Hierarchy
-- **Display** (Pixelify Sans 700, 2.25–3.75rem / `text-4xl`→`text-6xl`, line-height 1.1): hero verdict ("Don't trust. Verify."), the big risk score. The loudest the machine gets.
+- **Display** (Pixelify Sans 700, 2.25–5rem / `text-4xl`→`text-[5rem]`, line-height 1.1): hero verdict ("Don't trust. Verify."), the big risk score. The loudest the machine gets.
 - **Headline** (Pixelify Sans 700, 1.5–1.875rem / `text-2xl`→`text-3xl`): scanned project name on the report.
 - **Title** (Pixelify Sans 700, 0.875–1rem / `text-sm`→`text-base`): section headings ("RED FLAGS", "Recent Scans"), feature titles, button text.
 - **Body** (Space Grotesk 400, 0.875rem / `text-sm`, line-height 1.6): descriptions, summaries, TL;DR, red-flag copy. Cap prose at 65–75ch (the report column already sits at `max-w-3xl`).
