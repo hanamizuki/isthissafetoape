@@ -118,6 +118,16 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // ponytail: local helper, avoids repeating the same update pattern 4 times
+    async function markProcessed(ids: number[]) {
+      if (ids.length === 0) return;
+      const { error } = await admin
+        .from("security_posts")
+        .update({ processed_at: new Date().toISOString() })
+        .in("id", ids);
+      if (error) console.error("[notify] failed to mark processed", error.message);
+    }
+
     // Step 1: Load unprocessed posts
     const { data: posts, error: postsErr } = await admin
       .from("security_posts")
@@ -144,17 +154,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Mark stale posts processed immediately (no notification)
-    if (staleIds.length > 0) {
-      const { error: staleErr } = await admin
-        .from("security_posts")
-        .update({ processed_at: new Date().toISOString() })
-        .in("id", staleIds);
-      if (staleErr) {
-        console.error("[notify] failed to mark stale posts", staleErr.message);
-        // Non-fatal: continue with fresh posts
-      }
-    }
+    // Mark stale posts processed immediately (no notification; non-fatal on error)
+    await markProcessed(staleIds);
 
     if (freshPosts.length === 0) {
       return jsonResponse({
@@ -177,13 +178,9 @@ Deno.serve(async (req) => {
     }
     if (!subs || subs.length === 0) {
       // No subscribers — mark all fresh posts processed
-      const freshIds = freshPosts.map((p) => p.id);
-      await admin
-        .from("security_posts")
-        .update({ processed_at: new Date().toISOString() })
-        .in("id", freshIds);
+      await markProcessed(freshPosts.map((p) => p.id));
       return jsonResponse({
-        processed: staleIds.length + freshIds.length,
+        processed: staleIds.length + freshPosts.length,
         stale: staleIds.length,
         notified: 0,
         message: "No active subscriptions",
@@ -205,9 +202,15 @@ Deno.serve(async (req) => {
     const userIds = [...new Set(subs.map((s: { user_id: string }) => s.user_id))];
     const emailMap = new Map<string, string>();
     // Supabase admin API: list users and filter. For small user counts this is fine.
-    // ponytail: iterating listUsers for each userId; upgrade to a single RPC if user count > 100
+    // ponytail: iterating getUserById per userId; upgrade to a single RPC if user count > 100
+    const failedUserIds = new Set<string>();
     for (const uid of userIds) {
-      const { data: { user } } = await admin.auth.admin.getUserById(uid);
+      const { data: { user }, error: userErr } = await admin.auth.admin.getUserById(uid);
+      if (userErr) {
+        console.error("[notify] getUserById failed", { uid, error: userErr.message });
+        failedUserIds.add(uid); // Track so we don't mark their posts processed
+        continue;
+      }
       if (user?.email) emailMap.set(uid, user.email);
     }
 
@@ -215,8 +218,10 @@ Deno.serve(async (req) => {
     // Each subscription maps to a set of keywords: protocol_name, protocol_slug, and twitter handle
     const protocols: SubscribedProtocol[] = [];
     for (const s of subs) {
-      const email = emailMap.get(s.user_id);
-      if (!email) continue; // No email = can't notify
+      const email = emailMap.get(s.user_id) ?? "";
+      // Include even users with failed email lookups in keyword matching so their
+      // posts don't get silently marked processed. They'll be skipped during email
+      // sending and their posts added to failedPostIds for retry next run.
       const dir = dirMap.get(s.protocol_slug);
       protocols.push({
         subscription_id: s.id,
@@ -229,6 +234,9 @@ Deno.serve(async (req) => {
         dir_url: dir?.url ?? null,
       });
     }
+
+    // Index protocols by subscription_id for O(1) lookup in step 6
+    const protoBySubId = new Map(protocols.map((p) => [p.subscription_id, p]));
 
     // Build keyword → protocol mapping (case-insensitive)
     // Each keyword maps to the list of protocols it could match
@@ -271,10 +279,7 @@ Deno.serve(async (req) => {
     if (postMatches.length === 0) {
       // No keyword matches — mark all fresh posts processed
       const freshIds = freshPosts.map((p) => p.id);
-      await admin
-        .from("security_posts")
-        .update({ processed_at: new Date().toISOString() })
-        .in("id", freshIds);
+      await markProcessed(freshIds);
       return jsonResponse({
         processed: staleIds.length + freshIds.length,
         stale: staleIds.length,
@@ -339,7 +344,8 @@ Deno.serve(async (req) => {
             result = JSON.parse(jsonStr);
           } catch {
             console.error("[notify] LLM parse failed", { post_id: post.id, slug: proto.protocol_slug, text });
-            continue; // Skip this pair, post stays unprocessed for retry
+            failedPostIds.add(post.id); // Don't mark processed — retry next run
+            continue;
           }
 
           if (result.isIncident) {
@@ -374,8 +380,7 @@ Deno.serve(async (req) => {
     // Step 6: Merge alerts per user
     const userAlerts = new Map<string, { email: string; alerts: AlertItem[] }>();
     for (const alert of confirmedAlerts) {
-      // Find user info from the protocols list
-      const proto = protocols.find((p) => p.subscription_id === alert.subscription_id);
+      const proto = protoBySubId.get(alert.subscription_id);
       if (!proto) continue;
       const existing = userAlerts.get(proto.user_id) ?? { email: proto.user_email, alerts: [] };
       existing.alerts.push(alert);
@@ -401,23 +406,31 @@ Deno.serve(async (req) => {
     let totalNotified = 0;
 
     for (const [userId, { email, alerts }] of userAlerts) {
+      // Skip users whose email lookup failed — mark their posts for retry next run
+      if (!email || failedUserIds.has(userId)) {
+        for (const alert of alerts) failedPostIds.add(alert.post.id);
+        continue;
+      }
       try {
-        // Build per-alert HTML blocks and collect unsubscribe links
+        // Batch dedup: one query per user instead of one per alert
+        const alertPostIds = alerts.map((a) => a.post.id);
+        const { data: alreadySent } = await admin
+          .from("notifications")
+          .select("post_id, protocol_slug")
+          .eq("user_id", userId)
+          .in("post_id", alertPostIds);
+        const sentSet = new Set(
+          (alreadySent ?? []).map(
+            (n: { post_id: number; protocol_slug: string }) => `${n.post_id}:${n.protocol_slug}`,
+          ),
+        );
+
         const alertBlocks: string[] = [];
         const notificationRows: { user_id: string; post_id: number; protocol_slug: string }[] = [];
-        // Track unique unsubscribe links (one per protocol subscription)
         const unsubLinks = new Map<number, string>();
 
         for (const alert of alerts) {
-          // Check if notification already sent (unique constraint will catch it, but skip early)
-          const { data: existing } = await admin
-            .from("notifications")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("post_id", alert.post.id)
-            .eq("protocol_slug", alert.protocol_slug)
-            .limit(1);
-          if (existing && existing.length > 0) continue;
+          if (sentSet.has(`${alert.post.id}:${alert.protocol_slug}`)) continue;
 
           // Build HMAC-signed unsubscribe link for this subscription
           if (!unsubLinks.has(alert.subscription_id)) {
@@ -445,7 +458,7 @@ Deno.serve(async (req) => {
           </div>
           <div style="font-size:14px;color:#d4d4d8;line-height:1.5;margin-bottom:12px;white-space:pre-wrap;">${escapeHtml(alert.post.content)}</div>
           <div>
-            <a href="${escapeHtml(alert.post.post_url)}" style="color:#22d3ee;font-size:13px;text-decoration:none;border-bottom:1px solid rgba(34,211,238,0.4);">View original post</a>
+            <a href="${safeHref(alert.post.post_url)}" style="color:#22d3ee;font-size:13px;text-decoration:none;border-bottom:1px solid rgba(34,211,238,0.4);">View original post</a>
             ${rescanUrl ? `<span style="margin:0 8px;color:#52525b;">|</span><a href="${escapeHtml(rescanUrl)}" style="color:#22d3ee;font-size:13px;text-decoration:none;border-bottom:1px solid rgba(34,211,238,0.4);">Re-scan ${escapeHtml(alert.protocol_name)}</a>` : ""}
           </div>
         </div>`);
@@ -539,15 +552,7 @@ Deno.serve(async (req) => {
     const toMark = freshPosts
       .map((p) => p.id)
       .filter((id) => !failedPostIds.has(id));
-    if (toMark.length > 0) {
-      const { error: markErr } = await admin
-        .from("security_posts")
-        .update({ processed_at: new Date().toISOString() })
-        .in("id", toMark);
-      if (markErr) {
-        console.error("[notify] failed to mark processed", markErr.message);
-      }
-    }
+    await markProcessed(toMark);
 
     return jsonResponse({
       processed: staleIds.length + toMark.length,
@@ -569,5 +574,12 @@ function escapeHtml(s: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Validate URL scheme before interpolating into href. Post URLs come from the scraper
+// (should always be https twitter/x URLs) but defense-in-depth against javascript: etc.
+function safeHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? escapeHtml(url) : "#";
 }
