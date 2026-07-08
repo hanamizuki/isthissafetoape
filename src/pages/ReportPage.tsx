@@ -188,11 +188,13 @@ const subKeyOf = (slug: string | undefined, name: string) => slug ?? name.toLowe
 // toggle a subscription; anonymous users are routed to /auth first and returned here after
 // login. `user` is resolved once by ReportContent and drilled down, so the bell makes no auth
 // round-trip of its own.
-function SubscribeBell({ subKey, name, user }: { subKey: string; name: string; user: User | null }) {
+function SubscribeBell({ subKey, name, user, authLoading }: { subKey: string; name: string; user: User | null; authLoading: boolean }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { subscribed, toggle, isLoading } = useSubscriptions(user?.id)
   const isOn = subscribed.has(subKey)
+  // While auth is still resolving, a logged-in user's session may not have loaded yet, so the
+  // bell stays disabled (below) — otherwise a click would be misrouted to /auth as if anonymous.
 
   const handleClick = () => {
     if (!user) {
@@ -214,7 +216,7 @@ function SubscribeBell({ subKey, name, user }: { subKey: string; name: string; u
   return (
     <button
       onClick={handleClick}
-      disabled={toggle.isPending || isLoading}
+      disabled={toggle.isPending || isLoading || authLoading}
       aria-label={isOn ? `Unsubscribe from ${name} alerts` : `Subscribe to ${name} alerts`}
       aria-pressed={isOn}
       className={`flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0 border-2 transition-all disabled:opacity-50 ${
@@ -231,7 +233,7 @@ function SubscribeBell({ subKey, name, user }: { subKey: string; name: string; u
 function ReportContent({ report }: { report: RiskReport }) {
   // Resolve auth once here and drill `user` down to every bell — a report with k related
   // protocols would otherwise spin up k+1 identical useAuth() getUser round-trips + listeners.
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   // Subscription key for the primary protocol: the resolved DeFiLlama slug when present, else
   // the lowercased name. primaryProtocol is absent on reports cached before PR 1 — fall back to
   // projectName so the bell still works (the notify pipeline matches on name too).
@@ -246,7 +248,7 @@ function ReportContent({ report }: { report: RiskReport }) {
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
-              <SubscribeBell subKey={primaryKey} name={primaryName} user={user} />
+              <SubscribeBell subKey={primaryKey} name={primaryName} user={user} authLoading={authLoading} />
             </div>
             <RiskBadge level={report.riskLevel} label={report.riskLabel} />
           </div>
@@ -308,7 +310,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       )}
 
-      <RelatedProtocols report={report} user={user} />
+      <RelatedProtocols report={report} user={user} authLoading={authLoading} />
 
       <DeepDivePrompt report={report} />
 
@@ -544,7 +546,7 @@ function safeHttpUrl(url: string): string | undefined {
 
 // Supply-chain dependencies of the analyzed protocol. Hidden entirely when absent (old
 // cached reports) or empty. Each row can re-scan the dependency through the same flow.
-function RelatedProtocols({ report, user }: { report: RiskReport; user: User | null }) {
+function RelatedProtocols({ report, user, authLoading }: { report: RiskReport; user: User | null; authLoading: boolean }) {
   const related = report.relatedProtocols ?? []
   if (related.length === 0) return null
 
@@ -561,14 +563,14 @@ function RelatedProtocols({ report, user }: { report: RiskReport; user: User | n
       </p>
       <div className="space-y-3">
         {related.map((p, i) => (
-          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} user={user} />
+          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} user={user} authLoading={authLoading} />
         ))}
       </div>
     </div>
   )
 }
 
-function RelatedProtocolRow({ protocol, user }: { protocol: RelatedProtocol; user: User | null }) {
+function RelatedProtocolRow({ protocol, user, authLoading }: { protocol: RelatedProtocol; user: User | null; authLoading: boolean }) {
   // Gate every link on a validated http(s) URL — protects reports cached before the
   // server-side scheme validation shipped.
   const site = protocol.website ? safeHttpUrl(protocol.website) : undefined
@@ -601,7 +603,7 @@ function RelatedProtocolRow({ protocol, user }: { protocol: RelatedProtocol; use
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <SubscribeBell subKey={subKey} name={protocol.name} user={user} />
+          <SubscribeBell subKey={subKey} name={protocol.name} user={user} authLoading={authLoading} />
           {site && (
             // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
             // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
