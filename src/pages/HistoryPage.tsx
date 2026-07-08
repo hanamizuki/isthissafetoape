@@ -131,7 +131,7 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-pixel text-sm text-white group-hover:text-cyan-400 transition-colors truncate">
+            <span className="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors truncate">
               {scan.project_name || scan.url_hostname}
             </span>
             {scan.risk_label && (
@@ -147,7 +147,7 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
           {scan.tldr && (
             <p className="text-xs text-muted-foreground line-clamp-2">{scan.tldr}</p>
           )}
-          <div className="text-[10px] text-muted-foreground mt-2 font-pixel-sm">{timeAgo}</div>
+          <div className="text-xs text-muted-foreground mt-2">{timeAgo}</div>
         </div>
       </div>
     </button>

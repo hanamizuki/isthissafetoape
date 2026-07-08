@@ -191,10 +191,10 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
           {scan.total_score}
         </span>
       )}
-      <span className="font-pixel text-xs text-white group-hover:text-cyan-400 transition-colors truncate flex-1">
+      <span className="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors truncate flex-1">
         {scan.project_name || scan.url_hostname}
       </span>
-      <span className="font-pixel-sm text-[10px] text-muted-foreground shrink-0">{timeAgo}</span>
+      <span className="text-xs text-muted-foreground shrink-0">{timeAgo}</span>
     </button>
   )
 }
