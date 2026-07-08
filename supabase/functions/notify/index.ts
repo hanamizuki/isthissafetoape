@@ -189,10 +189,11 @@ Deno.serve(async (req) => {
 
     // Get unique protocol slugs and fetch directory info
     const slugs = [...new Set(subs.map((s: { protocol_slug: string }) => s.protocol_slug))];
-    const { data: dirRows } = await admin
+    const { data: dirRows, error: dirErr } = await admin
       .from("protocol_directory")
       .select("slug, name, twitter, url")
       .in("slug", slugs);
+    if (dirErr) console.error("[notify] protocol_directory query failed", dirErr.message);
     const dirMap = new Map<string, { name: string; twitter: string | null; url: string | null }>();
     for (const d of dirRows ?? []) {
       dirMap.set(d.slug, { name: d.name, twitter: d.twitter, url: d.url });
@@ -205,13 +206,13 @@ Deno.serve(async (req) => {
     // ponytail: iterating getUserById per userId; upgrade to a single RPC if user count > 100
     const failedUserIds = new Set<string>();
     for (const uid of userIds) {
-      const { data: { user }, error: userErr } = await admin.auth.admin.getUserById(uid);
-      if (userErr) {
-        console.error("[notify] getUserById failed", { uid, error: userErr.message });
-        failedUserIds.add(uid); // Track so we don't mark their posts processed
+      const res = await admin.auth.admin.getUserById(uid);
+      if (res.error) {
+        console.error("[notify] getUserById failed", { uid, error: res.error.message });
+        failedUserIds.add(uid);
         continue;
       }
-      if (user?.email) emailMap.set(uid, user.email);
+      if (res.data?.user?.email) emailMap.set(uid, res.data.user.email);
     }
 
     // Build the enriched protocol list with keywords
@@ -348,6 +349,14 @@ Deno.serve(async (req) => {
           } catch {
             console.error("[notify] LLM parse failed", { post_id: post.id, slug: proto.protocol_slug, text });
             failedPostIds.add(post.id); // Don't mark processed — retry next run
+            continue;
+          }
+
+          // Guard against primitives/arrays — JSON.parse succeeds for those but they
+          // don't match the expected shape (same pattern as analyze/index.ts).
+          if (!result || typeof result !== "object" || Array.isArray(result)) {
+            console.error("[notify] LLM response not an object", { post_id: post.id, slug: proto.protocol_slug });
+            failedPostIds.add(post.id);
             continue;
           }
 
