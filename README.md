@@ -55,34 +55,38 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge functions:
+3. Deploy the edge functions. `refresh-protocols` guards itself with a shared secret, so
+   deploy it with JWT verification off (that header is the gate):
    ```bash
    supabase functions deploy analyze
-   supabase functions deploy refresh-protocols
+   supabase functions deploy refresh-protocols --no-verify-jwt
    ```
 4. Set edge function secrets:
    ```bash
    supabase secrets set OPENROUTER_API_KEY=sk-or-...
    supabase secrets set JINA_API_KEY=jina_...
    supabase secrets set BRAVE_SEARCH_API_KEY=...
+   supabase secrets set REFRESH_SECRET=$(openssl rand -hex 32)   # gates refresh-protocols
    ```
-5. Populate and schedule the protocol directory (backs the related-protocols feature):
+5. Populate and schedule the protocol directory (backs the related-protocols feature).
+   `refresh-protocols` is gated on `REFRESH_SECRET` sent as the `x-refresh-key` header, so
+   only the cron (or an operator) can trigger the multi-MB DeFiLlama fetch + upsert:
    ```bash
-   # First population — call refresh-protocols once with the service-role key:
+   # First population — call once with the shared secret:
    curl -X POST 'https://<ref>.supabase.co/functions/v1/refresh-protocols' \
-     -H "Authorization: Bearer <service-role-key>"
-
-   # Daily refresh via Supabase Cron (pg_cron + pg_net). Run in the SQL Editor:
-   select vault.create_secret('<service-role-key>', 'service_role_key');
+     -H "x-refresh-key: <REFRESH_SECRET>"
+   ```
+   ```sql
+   -- Daily refresh via Supabase Cron (pg_cron + pg_net). Run in the SQL Editor:
+   select vault.create_secret('<REFRESH_SECRET>', 'refresh_secret');
    select cron.schedule('refresh-protocols-daily', '0 3 * * *', $$
      select net.http_post(
        url     := 'https://<ref>.supabase.co/functions/v1/refresh-protocols',
        headers := jsonb_build_object(
-         'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+         'x-refresh-key', (select decrypted_secret from vault.decrypted_secrets where name = 'refresh_secret'),
          'Content-Type', 'application/json')
      ) $$);
    ```
-   `refresh-protocols` is gated on the service-role key, so only the cron (or an operator) can trigger the multi-MB DeFiLlama fetch + upsert.
 
 ## License
 

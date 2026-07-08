@@ -34,3 +34,6 @@ docs/CONTEXT.md
 
 # Supabase CLI local state
 supabase/.temp/
+
+# Deno (edge-function typecheck can emit a lockfile we don't track here)
+deno.lock

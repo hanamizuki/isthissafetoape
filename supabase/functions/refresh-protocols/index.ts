@@ -6,22 +6,26 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 // slimmed subset into the protocol_directory table. Scheduled daily via Supabase Cron so
 // the multi-MB fetch never runs on the analyze hot path.
 //
-// Auth: gated on the service-role key. Without this, any holder of the public anon key
-// could trigger repeated multi-MB fetches + full-table upserts. The service-role key is a
-// valid project JWT, so it also clears the gateway's default JWT check.
+// Auth: gated on a dedicated shared secret (REFRESH_SECRET) sent as the `x-refresh-key`
+// header. Deployed with --no-verify-jwt so this header is the only gate. A dedicated
+// secret is deterministic — it avoids depending on which key format the platform injects
+// for the service role — while still keeping a holder of the public anon key from
+// triggering repeated multi-MB fetches + full-table upserts.
 //
 // Deploy + schedule (run once, values are project-specific — not committed):
-//   supabase functions deploy refresh-protocols --project-ref <ref>
-//   # store the service-role key in Vault, then schedule via pg_cron + pg_net:
-//   select vault.create_secret('<service-role-key>', 'service_role_key');
+//   supabase secrets set REFRESH_SECRET=<random-hex>
+//   supabase functions deploy refresh-protocols --use-api --no-verify-jwt --project-ref <ref>
+//   # first population (immediate):
+//   curl -X POST 'https://<ref>.supabase.co/functions/v1/refresh-protocols' -H 'x-refresh-key: <REFRESH_SECRET>'
+//   # daily schedule via pg_cron + pg_net (store REFRESH_SECRET in Vault):
+//   select vault.create_secret('<REFRESH_SECRET>', 'refresh_secret');
 //   select cron.schedule('refresh-protocols-daily', '0 3 * * *', $$
 //     select net.http_post(
-//       url    := 'https://<ref>.supabase.co/functions/v1/refresh-protocols',
+//       url     := 'https://<ref>.supabase.co/functions/v1/refresh-protocols',
 //       headers := jsonb_build_object(
-//         'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+//         'x-refresh-key', (select decrypted_secret from vault.decrypted_secrets where name = 'refresh_secret'),
 //         'Content-Type', 'application/json')
 //     ) $$);
-//   # first population (immediate): curl with the service-role key as the Bearer token.
 
 const DEFILLAMA_PROTOCOLS = "https://api.llama.fi/protocols";
 const BATCH_SIZE = 1000;
@@ -55,8 +59,8 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 Deno.serve(async (req) => {
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  if (req.headers.get("Authorization") !== `Bearer ${serviceKey}`) {
+  const refreshSecret = Deno.env.get("REFRESH_SECRET");
+  if (!refreshSecret || req.headers.get("x-refresh-key") !== refreshSecret) {
     return jsonResponse({ error: "Unauthorized" }, 401);
   }
 
@@ -96,7 +100,10 @@ Deno.serve(async (req) => {
     }
     const rows = [...bySlug.values()];
 
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
     let upserted = 0;
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
