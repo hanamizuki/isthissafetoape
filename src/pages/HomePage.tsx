@@ -70,7 +70,7 @@ function HomePage() {
       {/* Hero */}
       <main id="main-content" className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
         <div className="text-center space-y-5 mb-12">
-          <h1 className="font-pixel text-4xl sm:text-5xl lg:text-[5rem] font-bold text-white leading-tight">
+          <h1 className="font-pixel text-5xl sm:text-6xl lg:text-[5rem] font-bold text-white leading-tight">
             Don&apos;t trust.
             <br />
             <span className="text-cyan-400 neon-text-cyan animate-neon-flicker">
