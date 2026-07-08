@@ -55,11 +55,12 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge functions. `refresh-protocols` guards itself with a shared secret, so
-   deploy it with JWT verification off (that header is the gate):
+3. Deploy the edge functions. `refresh-protocols` and `ingest-posts` each guard themselves
+   with a shared secret, so deploy them with JWT verification off (that header is the gate):
    ```bash
    supabase functions deploy analyze
    supabase functions deploy refresh-protocols --no-verify-jwt
+   supabase functions deploy ingest-posts --no-verify-jwt
    ```
 4. Set edge function secrets:
    ```bash
@@ -67,6 +68,7 @@ bun run dev
    supabase secrets set JINA_API_KEY=jina_...
    supabase secrets set BRAVE_SEARCH_API_KEY=...
    supabase secrets set REFRESH_SECRET=$(openssl rand -hex 32)   # gates refresh-protocols
+   supabase secrets set INGEST_API_KEY=$(openssl rand -hex 32)   # gates ingest-posts; share with the scraper
    ```
 5. Populate and schedule the protocol directory (backs the related-protocols feature).
    `refresh-protocols` is gated on `REFRESH_SECRET` sent as the `x-refresh-key` header, so
@@ -86,6 +88,15 @@ bun run dev
          'x-refresh-key', (select decrypted_secret from vault.decrypted_secrets where name = 'refresh_secret'),
          'Content-Type', 'application/json')
      ) $$);
+   ```
+6. Security-alert ingestion (`ingest-posts` + `security_posts`): an external X scraper POSTs
+   batches of posts, gated on `INGEST_API_KEY` via the `x-ingest-key` header. Idempotent —
+   re-sending a batch is safe (upsert does nothing on `post_url` conflict):
+   ```bash
+   curl -X POST 'https://<ref>.supabase.co/functions/v1/ingest-posts' \
+     -H "x-ingest-key: <INGEST_API_KEY>" -H 'Content-Type: application/json' \
+     -d '{"posts":[{"post_url":"...","source_account":"...","author":"...","post_type":"original","text":"...","created_at":"2026-07-08T00:00:00Z","quoted_url":null}]}'
+   # → {"inserted": N, "skipped": M}
    ```
 
 ## License
