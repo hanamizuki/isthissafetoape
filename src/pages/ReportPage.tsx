@@ -580,7 +580,7 @@ function RelatedProtocolRow({ protocol, user, authLoading }: { protocol: Related
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-pixel-sm text-[10px] text-foreground tracking-wider">{protocol.name}</span>
+            <span className="text-sm font-semibold text-foreground">{protocol.name}</span>
             {protocol.category && (
               <span className="font-pixel-sm text-[9px] px-1.5 py-0.5 border border-cyan-500/25 text-cyan-400/80">
                 {protocol.category}
