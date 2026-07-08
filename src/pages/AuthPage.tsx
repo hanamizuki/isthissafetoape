@@ -42,7 +42,7 @@ function AuthPage() {
       <main id="main-content" className="w-full max-w-sm mx-4">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <img src="/shield-logo.svg" alt="" className="h-10 w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+            <img src="/shield-logo.png" alt="" className="h-10 w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
           </Link>
           <h1 className="font-pixel text-xl text-cyan-400 neon-text-cyan mt-4">
             {isSignUp ? "Create Account" : "Sign In"}

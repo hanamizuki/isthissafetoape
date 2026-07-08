@@ -464,7 +464,7 @@ function CategoryCard({ category }: { category: CategoryScore }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <span className="font-pixel-sm text-[10px] text-foreground tracking-wider">{category.name}</span>
-            <span className="font-pixel text-sm text-foreground ml-2">
+            <span className="font-mono text-sm text-foreground ml-2">
               {category.score}<span className="text-muted-foreground">/{category.maxScore}</span>
             </span>
           </div>

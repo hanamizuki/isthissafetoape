@@ -125,8 +125,8 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
       <div className="flex items-start gap-4">
         {scan.total_score != null && (
           <div className={`shrink-0 w-14 h-14 border-2 flex flex-col items-center justify-center ${scoreColor}`}>
-            <span className="font-pixel text-lg font-bold">{scan.total_score}</span>
-            <span className="font-pixel-sm text-[10px] text-muted-foreground">/{scan.max_score}</span>
+            <span className="font-mono text-lg font-bold">{scan.total_score}</span>
+            <span className="font-mono text-xs text-muted-foreground">/{scan.max_score}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">

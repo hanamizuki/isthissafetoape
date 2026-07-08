@@ -19,7 +19,7 @@ colors:
 typography:
   display:
     fontFamily: "Pixelify Sans, Press Start 2P, monospace"
-    fontSize: "1.875rem–3rem"
+    fontSize: "2.25rem–3.75rem"
     fontWeight: 700
     lineHeight: 1.1
     letterSpacing: "normal"
@@ -154,17 +154,17 @@ The four-stop scale that colors every score, gauge segment, risk badge, and red-
 **Character:** A hard contrast pairing, not a subtle one: chunky pixel display against a clean geometric-humanist sans. Pixelify Sans is the cabinet's grinning voice; Space Grotesk is the plain-spoken analyst. They never blur into each other because they share nothing — which is exactly why the pairing works.
 
 ### Hierarchy
-- **Display** (Pixelify Sans 700, 1.875–3rem / `text-3xl`→`text-5xl`, line-height 1.1): hero verdict ("Don't trust. Verify."), the big risk score. The loudest the machine gets.
+- **Display** (Pixelify Sans 700, 2.25–3.75rem / `text-4xl`→`text-6xl`, line-height 1.1): hero verdict ("Don't trust. Verify."), the big risk score. The loudest the machine gets.
 - **Headline** (Pixelify Sans 700, 1.5–1.875rem / `text-2xl`→`text-3xl`): scanned project name on the report.
 - **Title** (Pixelify Sans 700, 0.875–1rem / `text-sm`→`text-base`): section headings ("RED FLAGS", "Recent Scans"), feature titles, button text.
 - **Body** (Space Grotesk 400, 0.875rem / `text-sm`, line-height 1.6): descriptions, summaries, TL;DR, red-flag copy. Cap prose at 65–75ch (the report column already sits at `max-w-3xl`).
 - **Label** (Press Start 2P 400, ~0.625rem, letter-spacing 0.08em, UPPERCASE): the arcade kickers and status tags ("TARGET:", "TL;DR", "SCAN COMPLETE", "UNLIMITED"). A deliberate named system, not reflex eyebrows — but bound by the Readable-Floor Rule.
-- **Mono** (system monospace, 0.75rem / `text-xs`): target URLs, the copyable deep-dive prompt, the terminal-style search input (`> enter_url...`).
+- **Mono** (system monospace, 0.75–1.125rem / `text-xs`→`text-lg`): target URLs, the copyable deep-dive prompt, the terminal-style search input (`> enter_url...`), and inline numeric scores in scan lists and category cards.
 
 ### Named Rules
 **The Pixel-Display Rule.** Pixelify Sans and Press Start 2P carry identity — headings, scores, wordmark, kickers. The moment text exists to be *read* rather than *recognized* (any sentence, any paragraph, any explanation), it is Space Grotesk. Pixel fonts never carry a paragraph.
 
-**The Readable-Floor Rule.** *Readability wins every conflict with the theme.* Press Start 2P is near-unreadable below ~10px, yet the current code ships `text-[6px]` and `text-[7px]` labels — that is readability debt, not a target. New work never goes below ~10px on pixel labels, never puts Ink Muted below full opacity for text, and never sacrifices a score, verdict, or sentence to the retro skin. The cabinet can look tiny; the verdict must always be legible.
+**The Readable-Floor Rule.** *Readability wins every conflict with the theme.* Press Start 2P is near-unreadable below ~10px; earlier code shipped `text-[6px]`/`text-[7px]` labels, now raised to the ~10px floor. New work never goes below ~10px on pixel labels, never puts Ink Muted below full opacity for text, and never sacrifices a score, verdict, or sentence to the retro skin. The cabinet can look tiny; the verdict must always be legible.
 
 ## 4. Elevation
 
@@ -208,7 +208,7 @@ There are no drop shadows. This is a flat, sharp-cornered system where depth is 
 - Sticky top bar, `border-b-2` Neon Cyan `/20`. Shield logo with cyan drop-glow + Pixelify Sans wordmark in cyan bloom. Icon links (history, sign-out, GitHub) are 44×44px touch targets in Ink Muted, brightening to Neon Cyan on hover. A skip-to-content link precedes it. Opaque bg on mobile; translucent + `backdrop-blur` on desktop only (perf).
 
 ### Signature: The Pixel Score Gauge
-The machine's centerpiece and the North Star made literal. A large Pixelify Sans score (`text-4xl`→`text-5xl`) painted in the risk-spectrum color, above a **ten-segment HP bar**: filled segments in the verdict color, empty segments in `rgba(255,255,255,0.06)`, a `/maxScore` label beneath. The same segmented bar recurs inside every `CategoryCard`, thresholded per-category (≥70 green, ≥50 yellow, ≥30 orange, else pink). This bar is the product's single most recognizable object — an arcade health meter for a DeFi project's life expectancy.
+The machine's centerpiece and the North Star made literal. A large Pixelify Sans score (`text-4xl`→`text-5xl`) painted in the risk-spectrum color, above a **ten-segment HP bar**: filled segments in the verdict color, empty segments in `rgba(255,255,255,0.06)`, a `/maxScore` label beneath. The same segmented bar recurs inside every `CategoryCard`, thresholded per-category (≥70 green, ≥50 yellow, ≥30 orange, else pink). This bar is the product's single most recognizable object — an arcade health meter for a DeFi project's life expectancy. The large gauge score stays Pixelify Sans (the signature); smaller inline scores — category cards, scan-history and recent-scan rows — are set in mono for legibility.
 
 ### Signature: The CRT Scanline Overlay
 A fixed, full-viewport `repeating-linear-gradient` of faint 2px dark lines (`.scanlines`), pointer-events-none, sitting above content. It makes every screen feel like glass in a dark cabinet. Disabled below 768px to save a full-screen compositing layer.
@@ -219,7 +219,7 @@ A fixed, full-viewport `repeating-linear-gradient` of faint 2px dark lines (`.sc
 - **Do** answer with the score first. Verdict (score + risk label + TL;DR) reads above the fold; the six-dimension breakdown and deep-dive prompt are the receipts below.
 - **Do** let color carry the verdict — green→yellow→orange→pink for severity, Neon Cyan for the machine's voice, and nothing decorative from the spectrum.
 - **Do** keep corners sharp (`rounded-none`) and depth made of glow (`neon-box-*`, border-opacity climbs on hover).
-- **Do** set body copy in Space Grotesk at Ink (`#d7e8ea`); reserve Pixelify Sans / Press Start 2P for identity, scores, and kickers.
+- **Do** set body copy in Space Grotesk at Ink (`#d7e8ea`); reserve Pixelify Sans / Press Start 2P for identity, the big gauge score, and kickers — small inline scores use mono.
 - **Do** hold pixel labels at ~10px or larger and keep every animation gated behind `prefers-reduced-motion` (blink, neon-flicker, breathe).
 - **Do** use full `border-2` borders and semantic panel colors as the container vocabulary; one flat panel, never nested.
 
@@ -227,6 +227,6 @@ A fixed, full-viewport `repeating-linear-gradient` of faint 2px dark lines (`.sc
 - **Don't** drift toward **enterprise fintech / compliance SaaS** — no navy-and-white, no sterile trust badges, no KYC-gate chrome. This is a tool for people already in the arena.
 - **Don't** go **cute / pastel web3** — no rounded bubbles, soft pastels, friendly mascots, or earnest onboarding. The humor has teeth.
 - **Don't** ship **AI slop**: no gradient text (`background-clip: text`), no identical icon-card grids, no glassmorphism-by-default, no tracked-uppercase eyebrow above every section as reflex scaffolding. (The pixel kicker is a *deliberate named system* — that is the allowed exception, not license to eyebrow everything.)
-- **Don't** ship `text-[6px]` / `text-[7px]` pixel labels or Ink-Muted text below full opacity — the current ones are debt to pay down, not a pattern to copy. Readability wins every conflict with the theme.
+- **Don't** ship `text-[6px]` / `text-[7px]` pixel labels or text below full opacity — hold pixel labels at the ~10px floor. Readability wins every conflict with the theme.
 - **Don't** add a gray `box-shadow` anywhere. Depth is light; a dark shadow reads as a 2014 app glued onto the cabinet.
 - **Don't** introduce a fourth cyan, and don't use a risk-spectrum color as a mood accent. If pink is on screen, something is dangerous.

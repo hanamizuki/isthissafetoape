@@ -70,7 +70,7 @@ function HomePage() {
       {/* Hero */}
       <main id="main-content" className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
         <div className="text-center space-y-5 mb-12">
-          <h1 className="font-pixel text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+          <h1 className="font-pixel text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
             Don&apos;t trust.
             <br />
             <span className="text-cyan-400 neon-text-cyan animate-neon-flicker">
@@ -187,7 +187,7 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
       className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/[0.06] bg-white/[0.01] hover:border-cyan-500/20 hover:bg-white/[0.02] transition-all text-left group"
     >
       {scan.total_score != null && (
-        <span className={`font-pixel text-base font-bold shrink-0 w-10 text-center ${scoreColor}`}>
+        <span className={`font-mono text-base font-bold shrink-0 w-10 text-center ${scoreColor}`}>
           {scan.total_score}
         </span>
       )}
