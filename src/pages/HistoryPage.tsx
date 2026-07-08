@@ -26,7 +26,7 @@ function HistoryPage() {
   if (!user) {
     return (
       <PageShell>
-        <div className="border-2 border-cyan-500/15 bg-card/50 p-8 neon-box-cyan text-center">
+        <div className="border-2 border-cyan-400/15 bg-card/50 p-8 neon-box-cyan text-center">
           <p className="font-pixel text-sm text-cyan-400 neon-text-cyan mb-2">SIGN IN REQUIRED</p>
           <p className="text-sm text-muted-foreground mb-4">Sign in to view your scan history.</p>
           <Link to={`/auth?redirect=${encodeURIComponent("/history")}`}>
@@ -55,7 +55,7 @@ function HistoryPage() {
       )}
 
       {history.data && history.data.length === 0 && (
-        <div className="border-2 border-cyan-500/15 bg-card/50 p-8 neon-box-cyan text-center">
+        <div className="border-2 border-cyan-400/15 bg-card/50 p-8 neon-box-cyan text-center">
           <Search className="h-8 w-8 text-cyan-400/40 mx-auto mb-3" />
           <p className="font-pixel text-sm text-cyan-400 neon-text-cyan mb-2">NO SCANS YET</p>
           <p className="text-sm text-muted-foreground mb-4">Scan a DeFi project to see it here.</p>
@@ -89,7 +89,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
       <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
         <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-pixel-sm text-[8px]">HOME</span>
+          <span className="font-pixel-sm text-[10px]">HOME</span>
         </Link>
 
         <div className="flex items-center gap-3 mb-6">
@@ -120,22 +120,22 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
   return (
     <button
       onClick={onClick}
-      className="w-full text-left border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/25 hover:bg-white/[0.02] transition-all group"
+      className="w-full text-left border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-400/25 hover:bg-white/[0.02] transition-all group"
     >
       <div className="flex items-start gap-4">
         {scan.total_score != null && (
           <div className={`shrink-0 w-14 h-14 border-2 flex flex-col items-center justify-center ${scoreColor}`}>
-            <span className="font-pixel text-lg font-bold">{scan.total_score}</span>
-            <span className="font-pixel-sm text-[6px] opacity-60">/{scan.max_score}</span>
+            <span className="font-mono text-lg font-bold">{scan.total_score}</span>
+            <span className="font-mono text-xs text-muted-foreground">/{scan.max_score}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-pixel text-sm text-white group-hover:text-cyan-400 transition-colors truncate">
+            <span className="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors truncate">
               {scan.project_name || scan.url_hostname}
             </span>
             {scan.risk_label && (
-              <span className={`font-pixel-sm text-[7px] px-1.5 py-0.5 border shrink-0 ${scoreColor}`}>
+              <span className={`font-pixel-sm text-[10px] px-1.5 py-0.5 border shrink-0 ${scoreColor}`}>
                 {scan.risk_label}
               </span>
             )}
@@ -145,9 +145,9 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
             <ExternalLink className="h-3 w-3 shrink-0 opacity-50" />
           </div>
           {scan.tldr && (
-            <p className="text-xs text-muted-foreground/70 line-clamp-2">{scan.tldr}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{scan.tldr}</p>
           )}
-          <div className="text-[10px] text-muted-foreground/40 mt-2 font-pixel-sm">{timeAgo}</div>
+          <div className="text-xs text-muted-foreground mt-2">{timeAgo}</div>
         </div>
       </div>
     </button>

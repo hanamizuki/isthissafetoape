@@ -42,7 +42,7 @@ function AuthPage() {
       <main id="main-content" className="w-full max-w-sm mx-4">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <img src="/shield-logo.svg" alt="" className="h-10 w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+            <img src="/shield-logo.png" alt="" className="h-10 w-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
           </Link>
           <h1 className="font-pixel text-xl text-cyan-400 neon-text-cyan mt-4">
             {isSignUp ? "Create Account" : "Sign In"}
@@ -53,9 +53,9 @@ function AuthPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="border-2 border-cyan-500/15 bg-card/50 p-6 space-y-4 neon-box-cyan">
+          <div className="border-2 border-cyan-400/15 bg-card/50 p-6 space-y-4 neon-box-cyan">
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">EMAIL</Label>
+              <Label htmlFor="email" className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">EMAIL</Label>
               <Input
                 id="email"
                 type="email"
@@ -63,11 +63,11 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-500/40"
+                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-400/40"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">PASSWORD</Label>
+              <Label htmlFor="password" className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">PASSWORD</Label>
               <Input
                 id="password"
                 type="password"
@@ -76,7 +76,7 @@ function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-500/40"
+                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-400/40"
               />
             </div>
             <Button
