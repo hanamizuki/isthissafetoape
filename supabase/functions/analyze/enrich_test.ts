@@ -7,6 +7,7 @@ Deno.test("escapeLike neutralizes LIKE + PostgREST wildcards", () => {
   assertEquals(escapeLike("100%_pool"), "100\\%\\_pool");
   assertEquals(escapeLike("a\\b"), "a\\\\b");
   assertEquals(escapeLike("A*B"), "A\\*B"); // PostgREST aliases * → %, so escape it too
+  assertEquals(escapeLike("A?B"), "A\\?B"); // PostgREST aliases ? → _, so escape it too
 });
 
 Deno.test("safeWebUrl passes http(s), rejects everything else", () => {

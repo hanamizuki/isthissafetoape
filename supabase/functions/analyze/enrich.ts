@@ -21,13 +21,13 @@ export interface RelatedEnriched extends Resolution {
   relationship: string;
 }
 
-// Escape LIKE metacharacters so a protocol name containing % or _ can't act as a
-// wildcard in the ILIKE queries below. Postgres LIKE uses backslash as the escape char.
-// `*` is escaped too because PostgREST aliases `*` → `%` before it reaches Postgres;
-// escaping it can only make a `*`-bearing name fail to match (falling through to
+// Escape LIKE metacharacters so a protocol name can't act as a wildcard in the ILIKE
+// queries below. Postgres LIKE uses backslash as the escape char for % and _. PostgREST
+// additionally aliases `*` → `%` and `?` → `_` on the way in, so those are escaped too.
+// Escaping can only make a metachar-bearing name fail to match (falling through to
 // CoinGecko / name-only), never widen the pattern to a wrong row.
 export function escapeLike(s: string): string {
-  return s.replace(/[\\%_*]/g, "\\$&");
+  return s.replace(/[\\%_*?]/g, "\\$&");
 }
 
 // A resolved website is only safe to render as a link if it is http(s). The directory and

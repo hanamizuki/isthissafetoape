@@ -531,11 +531,16 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
           )}
         </div>
         {site && (
-          <Link to={`/report?url=${encodeURIComponent(site)}`} className="shrink-0">
-            <Button className="font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all">
-              ANALYZE
-            </Button>
-          </Link>
+          // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
+          // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
+          // is empty, so an in-app transition would keep showing the current report instead of
+          // scanning the dependency. asChild renders the <a> with the button's styling.
+          <Button
+            asChild
+            className="shrink-0 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
+          >
+            <a href={`/report?url=${encodeURIComponent(site)}`}>ANALYZE</a>
+          </Button>
         )}
       </div>
     </div>

@@ -83,9 +83,12 @@ Deno.serve(async (req) => {
     // UPDATE cannot affect row a second time"). Keep the highest-TVL occurrence.
     const bySlug = new Map<string, DirectoryRow>();
     for (const p of protocols as LlamaProtocol[]) {
-      // Guard against a null/non-object element in the DeFiLlama array — accessing
-      // p.slug on null would throw and abort the whole refresh.
-      if (!p || typeof p !== "object" || !p.slug || !p.name) continue;
+      // Guard against a null/non-object element (accessing p.slug on null would throw and
+      // abort the whole refresh) and against non-string slug/name (a number/bool would pass
+      // a truthiness check but fail the text-column upsert). Require non-empty strings.
+      if (!p || typeof p !== "object" ||
+          typeof p.slug !== "string" || !p.slug ||
+          typeof p.name !== "string" || !p.name) continue;
       const tvl = typeof p.tvl === "number" ? p.tvl : null;
       const existing = bySlug.get(p.slug);
       if (existing && (tvl ?? -1) <= (existing.tvl ?? -1)) continue;
