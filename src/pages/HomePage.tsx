@@ -9,6 +9,16 @@ import { useAuth } from "@/hooks/useAuth"
 import { useRecentScans } from "@/hooks/useRecentScans"
 import { getTimeAgo } from "@/lib/time"
 
+// What the scanner inspects — rendered as one manifest panel, not a 6-up card grid.
+const SCAN_ITEMS = [
+  { icon: <Shield className="h-4 w-4" />, title: "CONTRACT", description: "Audit reports, code quality, centralization risks" },
+  { icon: <Eye className="h-4 w-4" />, title: "TRANSPARENCY", description: "On-chain reserves, governance, team doxxing" },
+  { icon: <TrendingUp className="h-4 w-4" />, title: "FINANCIALS", description: "Tokenomics, liquidity, yield sustainability" },
+  { icon: <AlertTriangle className="h-4 w-4" />, title: "RED FLAGS", description: "Rug pull patterns, depeg, scam matching" },
+  { icon: <Zap className="h-4 w-4" />, title: "INFRA", description: "Oracle, bridge, MEV, frontend risks" },
+  { icon: <Lock className="h-4 w-4" />, title: "COMPLIANCE", description: "Regulatory risk, KYC/AML, jurisdiction" },
+]
+
 function HomePage() {
   const [url, setUrl] = useState("")
   const navigate = useNavigate()
@@ -122,44 +132,23 @@ function HomePage() {
           </div>
         )}
 
-        {/* Feature grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <FeatureCard
-            icon={<Shield className="h-4 w-4" />}
-            title="CONTRACT"
-            description="Audit reports, code quality, centralization risks"
-            color="cyan"
-          />
-          <FeatureCard
-            icon={<Eye className="h-4 w-4" />}
-            title="TRANSPARENCY"
-            description="On-chain reserves, governance, team doxxing"
-            color="emerald"
-          />
-          <FeatureCard
-            icon={<TrendingUp className="h-4 w-4" />}
-            title="FINANCIALS"
-            description="Tokenomics, liquidity, yield sustainability"
-            color="cyan"
-          />
-          <FeatureCard
-            icon={<AlertTriangle className="h-4 w-4" />}
-            title="RED FLAGS"
-            description="Rug pull patterns, depeg, scam matching"
-            color="pink"
-          />
-          <FeatureCard
-            icon={<Zap className="h-4 w-4" />}
-            title="INFRA"
-            description="Oracle, bridge, MEV, frontend risks"
-            color="emerald"
-          />
-          <FeatureCard
-            icon={<Lock className="h-4 w-4" />}
-            title="COMPLIANCE"
-            description="Regulatory risk, KYC/AML, jurisdiction"
-            color="cyan"
-          />
+        {/* Scan manifest — the six checks in one panel, not a 6-up card grid */}
+        <div className="border-2 border-cyan-400/15 bg-card/50 neon-box-cyan p-5">
+          <h2 className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider mb-3">WHAT WE SCAN</h2>
+          <ul>
+            {SCAN_ITEMS.map((item) => (
+              <li
+                key={item.title}
+                className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 py-3 first:pt-0 border-t border-white/[0.06] first:border-t-0"
+              >
+                <div className="flex items-center gap-2.5 shrink-0 sm:w-44 text-cyan-400">
+                  {item.icon}
+                  <span className="font-pixel-sm text-[10px] tracking-wider">{item.title}</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Bottom */}
@@ -196,41 +185,6 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
       </span>
       <span className="text-xs text-muted-foreground shrink-0">{timeAgo}</span>
     </button>
-  )
-}
-
-
-function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: "cyan" | "emerald" | "pink" }) {
-  const colorMap = {
-    cyan: {
-      border: "border-cyan-400/15 hover:border-cyan-400/40",
-      glow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.1)]",
-      icon: "text-cyan-400 border-cyan-400/30",
-      title: "text-cyan-400",
-    },
-    emerald: {
-      border: "border-emerald-500/15 hover:border-emerald-500/40",
-      glow: "hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]",
-      icon: "text-emerald-400 border-emerald-500/30",
-      title: "text-emerald-400",
-    },
-    pink: {
-      border: "border-pink-500/15 hover:border-pink-500/40",
-      glow: "hover:shadow-[0_0_15px_rgba(255,45,120,0.1)]",
-      icon: "text-pink-400 border-pink-500/30",
-      title: "text-pink-400",
-    },
-  }
-  const c = colorMap[color]
-
-  return (
-    <div className={`group border-2 bg-white/[0.01] p-4 transition-all duration-300 ${c.border} ${c.glow}`}>
-      <div className={`w-8 h-8 border-2 flex items-center justify-center mb-3 ${c.icon}`}>
-        {icon}
-      </div>
-      <h3 className={`font-pixel font-bold text-sm mb-2 ${c.title}`}>{title}</h3>
-      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-    </div>
   )
 }
 
