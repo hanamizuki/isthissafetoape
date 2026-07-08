@@ -42,6 +42,10 @@ function hexToBytes(hex: string): Uint8Array | null {
 // Constant-time HMAC verification: crypto.subtle.verify compares internally, so a bad signature
 // never leaks timing about how many leading bytes matched.
 async function verifySignature(id: string, sigHex: string, secret: string): Promise<boolean> {
+  // A valid HMAC-SHA256 signature is exactly 32 bytes / 64 hex chars. Reject any other length up
+  // front — a correctness guard (wrong-length sigs never verify anyway) and a cheap ceiling on the
+  // hex we decode, so an over-long query param can't make us allocate a large buffer.
+  if (sigHex.length !== 64) return false;
   const sigBytes = hexToBytes(sigHex);
   if (!sigBytes) return false;
   const key = await crypto.subtle.importKey(
