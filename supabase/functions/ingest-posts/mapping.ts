@@ -29,11 +29,14 @@ function httpUrl(u: string): string | undefined {
   }
 }
 
+// Coerce an unknown field to a trimmed string ("" if absent/non-string). Module scope so
+// it isn't re-created on every mapPost call (mapPost runs once per post, up to MAX_BATCH).
+const trimmed = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+
 // Map one wire post to a row, or null if it's malformed (missing/invalid required fields).
 export function mapPost(p: unknown): SecurityPostRow | null {
   if (!p || typeof p !== "object") return null;
   const o = p as Record<string, unknown>;
-  const trimmed = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
   const post_url = trimmed(o.post_url);
   const source_account = trimmed(o.source_account);
