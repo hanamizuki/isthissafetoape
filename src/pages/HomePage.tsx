@@ -17,14 +17,14 @@ function HomePage() {
 
   const handleAnalyze = () => {
     if (!url.trim()) {
-      toast.error("Please enter a URL to analyze")
+      toast.error("Paste a URL first — a project site, airdrop, or protocol link.")
       return
     }
     try {
       const parsed = new URL(url.startsWith("http") ? url : `https://${url}`)
       navigate(`/report?url=${encodeURIComponent(parsed.toString())}`)
     } catch {
-      toast.error("Please enter a valid URL")
+      toast.error("That doesn't look like a URL. Paste the full link, e.g. https://example.com")
     }
   }
 

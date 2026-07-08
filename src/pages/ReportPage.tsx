@@ -30,9 +30,6 @@ function ReportPage() {
   const isLoading = isSharedView ? scan.isLoading : analyze.isPending
   const isError = isSharedView ? scan.isError : analyze.isError
   const isRateLimited = !isSharedView && analyze.isError && (analyze.error?.message?.includes("limit") || false)
-  const errorMessage = isSharedView
-    ? (scan.error?.message || "Scan not found")
-    : (analyze.error?.message || "Unknown error")
   const displayUrl = report?.projectUrl || url
 
   if (!isSharedView && !url) {
@@ -40,7 +37,7 @@ function ReportPage() {
       <div className="min-h-screen bg-background flex items-center justify-center scanlines">
         <div className="text-center space-y-4">
           <p className="font-pixel text-sm text-muted-foreground">NO URL PROVIDED</p>
-          <Link to="/"><Button variant="outline" className="font-pixel text-sm rounded-none border-2">GO BACK</Button></Link>
+          <Link to="/"><Button variant="outline" className="font-pixel text-sm rounded-none border-2">START A SCAN</Button></Link>
         </div>
       </div>
     )
@@ -84,8 +81,14 @@ function ReportPage() {
         )}
         {isError && !isRateLimited && (
           <div className="border-2 border-pink-500/25 bg-pink-500/[0.03] p-5 neon-box-pink text-center">
-            <p className="font-pixel text-sm text-pink-400 neon-text-pink mb-2">SCAN FAILED</p>
-            <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
+            <p className="font-pixel text-sm text-pink-400 neon-text-pink mb-2">
+              {isSharedView ? "REPORT NOT FOUND" : "SCAN FAILED"}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {isSharedView
+                ? "This report doesn't exist or the link expired. Double-check the link, or run a fresh scan."
+                : "Couldn't get a clean read on this target — it might be down, blocking scrapers, or too fresh to have a footprint. Check the URL and retry."}
+            </p>
             {!isSharedView && (
               <Button onClick={() => analyze.mutate(url)} className="font-pixel text-sm rounded-none bg-cyan-500 hover:bg-cyan-400 text-background">
                 RETRY
@@ -230,7 +233,10 @@ function ReportContent({ report }: { report: RiskReport }) {
 
       {report.categories && (
         <div>
-          <h2 className="font-pixel-sm text-[10px] text-muted-foreground tracking-widest mb-3">DETAILED BREAKDOWN</h2>
+          <h2 className="font-pixel-sm text-[10px] text-muted-foreground tracking-widest mb-2">DETAILED BREAKDOWN</h2>
+          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+            Six weighted dimensions, higher = safer. Red flags hard-cap the total — no audit caps at 60, anon team + no multisig at 50, a known scam is a flat 0. Positives don&apos;t buy those back.
+          </p>
           <div className="space-y-3">
             {report.categories.map((cat, i) => (
               <CategoryCard key={i} category={cat} />
