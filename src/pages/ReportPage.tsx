@@ -59,7 +59,7 @@ function ReportPage() {
         {displayUrl && (
           <div className="flex items-center gap-2 text-sm mb-8 border-2 border-cyan-400/15 bg-card/50 px-4 py-2.5">
             <span className="font-pixel-sm text-[10px] text-cyan-400">TARGET:</span>
-            <span className="text-foreground truncate font-mono text-xs">{displayUrl}</span>
+            <span className="text-foreground truncate font-mono text-sm">{displayUrl}</span>
             <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors">
               <ExternalLink className="h-4 w-4" />
             </a>
@@ -70,7 +70,7 @@ function ReportPage() {
         {isRateLimited && (
           <div className="border-2 border-yellow-500/25 bg-yellow-500/[0.03] p-6 text-center space-y-4">
             <p className="font-pixel text-sm text-yellow-400 neon-text-yellow">DAILY LIMIT REACHED</p>
-            <p className="text-sm text-muted-foreground">You've used all 3 free scans for today. Sign in for unlimited access.</p>
+            <p className="text-base text-muted-foreground">You've used all 3 free scans for today. Sign in for unlimited access.</p>
             <Link to={`/auth?redirect=${encodeURIComponent(`/report?url=${encodeURIComponent(url)}`)}`}>
               <Button className="font-pixel text-sm rounded-none bg-cyan-500 hover:bg-cyan-400 text-background">
                 <LogIn className="h-4 w-4 mr-2" />
@@ -84,7 +84,7 @@ function ReportPage() {
             <p className="font-pixel text-sm text-pink-400 neon-text-pink mb-2">
               {isSharedView ? "REPORT NOT FOUND" : "SCAN FAILED"}
             </p>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-base text-muted-foreground mb-4">
               {isSharedView
                 ? "This report doesn't exist or the link expired. Double-check the link, or run a fresh scan."
                 : "Couldn't get a clean read on this target — it might be down, blocking scrapers, or too fresh to have a footprint. Check the URL and retry."}
@@ -109,7 +109,7 @@ function LoadingSkeleton() {
         <span className="font-pixel text-sm text-cyan-400 neon-text-cyan animate-blink">
           SCANNING TARGET...
         </span>
-        <p className="text-xs text-muted-foreground mt-2">AI is researching this project. This may take 10-20 seconds.</p>
+        <p className="text-sm text-muted-foreground mt-2">AI is researching this project. This may take 10-20 seconds.</p>
       </div>
       <div className="flex items-center gap-4 mb-8">
         <Skeleton className="w-20 h-20 bg-white/[0.04]" />
@@ -195,7 +195,7 @@ function ReportContent({ report }: { report: RiskReport }) {
 
       <div className="border-2 border-cyan-400/15 bg-card/50 p-5 neon-box-cyan">
         <h2 className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider mb-2">TL;DR</h2>
-        <p className="text-sm text-foreground leading-relaxed">{report.tldr}</p>
+        <p className="text-base text-foreground leading-relaxed">{report.tldr}</p>
       </div>
 
       {report.redFlags && report.redFlags.length > 0 && (
@@ -222,7 +222,7 @@ function ReportContent({ report }: { report: RiskReport }) {
           </div>
           <ul className="space-y-1.5">
             {report.positives.map((p, i) => (
-              <li key={i} className="text-sm text-foreground flex items-start gap-2">
+              <li key={i} className="text-base text-foreground flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5 shrink-0 font-pixel-sm text-[10px]">+</span>
                 {p}
               </li>
@@ -234,7 +234,7 @@ function ReportContent({ report }: { report: RiskReport }) {
       {report.categories && (
         <div>
           <h2 className="font-pixel-sm text-[10px] text-muted-foreground tracking-widest mb-2">DETAILED BREAKDOWN</h2>
-          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
             Six weighted dimensions, higher = safer. Red flags hard-cap the total — no audit caps at 60, anon team + no multisig at 50, a known scam is a flat 0. Positives don&apos;t buy those back.
           </p>
           <div className="space-y-3">
@@ -303,8 +303,8 @@ function RedFlagItem({ flag }: { flag: RedFlag }) {
     <div className="flex items-start gap-3">
       <div className={`w-2 h-2 mt-1.5 shrink-0 ${severityColors[flag.severity]}`} />
       <div>
-        <div className="text-sm font-semibold text-foreground">{flag.title}</div>
-        <div className="text-xs text-muted-foreground mt-0.5">{flag.description}</div>
+        <div className="text-base font-semibold text-foreground">{flag.title}</div>
+        <div className="text-sm text-muted-foreground mt-0.5">{flag.description}</div>
       </div>
     </div>
   )
@@ -444,10 +444,10 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">
+      <p className="text-sm text-muted-foreground mb-3">
         Copy this prompt and paste it into your favorite AI assistant for a deeper, independent analysis.
       </p>
-      <pre className="text-xs text-muted-foreground bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed" tabIndex={0} role="region" aria-label="Deep dive prompt text">
+      <pre className="text-sm text-muted-foreground bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed" tabIndex={0} role="region" aria-label="Deep dive prompt text">
         {prompt}
       </pre>
     </div>
@@ -483,7 +483,7 @@ function CategoryCard({ category }: { category: CategoryScore }) {
               />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">{category.summary}</p>
+          <p className="text-sm text-muted-foreground">{category.summary}</p>
         </div>
         {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
       </button>
@@ -491,7 +491,7 @@ function CategoryCard({ category }: { category: CategoryScore }) {
         <div className="px-4 pb-4 border-t-2 border-white/[0.04]">
           <ul className="space-y-1.5 pt-3">
             {category.details.map((d, i) => (
-              <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+              <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                 <span className="text-cyan-400 mt-px shrink-0 font-pixel-sm text-[10px]">&gt;</span>
                 {d}
               </li>

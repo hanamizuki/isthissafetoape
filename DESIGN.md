@@ -35,7 +35,7 @@ typography:
     lineHeight: 1.2
   body:
     fontFamily: "Space Grotesk, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    fontSize: "0.875rem–1rem"
     fontWeight: 400
     lineHeight: 1.6
   label:
@@ -157,7 +157,7 @@ The four-stop scale that colors every score, gauge segment, risk badge, and red-
 - **Display** (Pixelify Sans 700, 2.25–5rem / `text-4xl`→`text-[5rem]`, line-height 1.1): hero verdict ("Don't trust. Verify."), the big risk score. The loudest the machine gets.
 - **Headline** (Pixelify Sans 700, 1.5–1.875rem / `text-2xl`→`text-3xl`): scanned project name on the report.
 - **Title** (Pixelify Sans 700, 0.875–1rem / `text-sm`→`text-base`): section headings ("RED FLAGS", "Recent Scans"), feature titles, button text.
-- **Body** (Space Grotesk 400, 0.875rem / `text-sm`, line-height 1.6): descriptions, summaries, TL;DR, red-flag copy. Cap prose at 65–75ch (the report column already sits at `max-w-3xl`).
+- **Body** (Space Grotesk 400, 0.875–1rem / `text-sm`→`text-base`, line-height 1.6): descriptions, summaries, TL;DR, red-flag copy. The report payload reads at the `text-base` end for comfort; secondary and meta copy sit at `text-sm`. Cap prose at 65–75ch (the report column already sits at `max-w-3xl`).
 - **Label** (Press Start 2P 400, ~0.625rem, letter-spacing 0.08em, UPPERCASE): the arcade kickers and status tags ("TARGET:", "TL;DR", "SCAN COMPLETE", "UNLIMITED"). A deliberate named system, not reflex eyebrows — but bound by the Readable-Floor Rule.
 - **Mono** (system monospace, 0.75–1.125rem / `text-xs`→`text-lg`): target URLs, the copyable deep-dive prompt, the terminal-style search input (`> enter_url...`), and inline numeric scores in scan lists and category cards.
 
