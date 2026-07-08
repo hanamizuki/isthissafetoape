@@ -55,7 +55,7 @@ function HomePage() {
             </>
           ) : (
             <>
-              <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-cyan-500/25 font-pixel-sm text-[10px] text-cyan-400">
+              <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
                 FREE &middot; 3/DAY
               </span>
               <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:border-cyan-500/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
