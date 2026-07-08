@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from "react"
-import { useSearchParams, useParams, Link } from "react-router-dom"
-import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network } from "lucide-react"
+import { useSearchParams, useParams, useNavigate, useLocation, Link } from "react-router-dom"
+import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAnalyze } from "@/hooks/useAnalyze"
 import { useScan } from "@/hooks/useScan"
+import { useAuth } from "@/hooks/useAuth"
+import { useSubscriptions } from "@/hooks/useSubscriptions"
 import { toast } from "sonner"
 import type { RiskReport, CategoryScore, RedFlag, RelatedProtocol } from "@/types/risk"
 
@@ -177,14 +179,67 @@ function XIcon({ className }: { className?: string }) {
   )
 }
 
+// Subscribe bell for one protocol (the primary header + each related row). Logged-in users
+// toggle a subscription; anonymous users are routed to /auth first and returned here after
+// login. The subscription key is the DeFiLlama slug when resolved, else the lowercased name.
+function SubscribeBell({ subKey, name }: { subKey: string; name: string }) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { subscribed, toggle } = useSubscriptions()
+  const isOn = subscribed.has(subKey)
+
+  const handleClick = () => {
+    if (!user) {
+      navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
+    toggle.mutate(
+      { key: subKey, name },
+      {
+        onError: () => toast.error("Couldn't update subscription — try again."),
+        onSuccess: () =>
+          isOn
+            ? toast.success(`Unfollowed ${name}`)
+            : toast.success(`Following ${name} — we'll email you on alerts`),
+      },
+    )
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={toggle.isPending}
+      aria-label={isOn ? `Unsubscribe from ${name} alerts` : `Subscribe to ${name} alerts`}
+      aria-pressed={isOn}
+      className={`flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0 border-2 transition-all disabled:opacity-50 ${
+        isOn
+          ? "border-cyan-400/40 bg-cyan-500/10 text-cyan-400"
+          : "border-white/[0.08] bg-white/[0.01] text-muted-foreground hover:border-cyan-400/30 hover:text-cyan-400"
+      }`}
+    >
+      <Bell className="h-4 w-4" fill={isOn ? "currentColor" : "none"} />
+    </button>
+  )
+}
+
 function ReportContent({ report }: { report: RiskReport }) {
+  // Subscription key for the primary protocol: the resolved DeFiLlama slug when present, else
+  // the lowercased name. primaryProtocol is absent on reports cached before PR 1 — fall back to
+  // projectName so the bell still works (the notify pipeline matches on name too).
+  const primaryName = report.primaryProtocol?.name ?? report.projectName
+  const primaryKey = report.primaryProtocol?.slug ?? primaryName.toLowerCase()
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex items-center gap-5">
           <PixelScoreGauge score={report.totalScore} maxScore={report.maxScore} riskLevel={report.riskLevel} />
           <div>
-            <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
+              <SubscribeBell subKey={primaryKey} name={primaryName} />
+            </div>
             <RiskBadge level={report.riskLevel} label={report.riskLabel} />
           </div>
         </div>
@@ -509,6 +564,7 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
   // Gate every link on a validated http(s) URL — protects reports cached before the
   // server-side scheme validation shipped.
   const site = protocol.website ? safeHttpUrl(protocol.website) : undefined
+  const subKey = protocol.slug ?? protocol.name.toLowerCase()
   return (
     <div className="border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/15 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -536,18 +592,21 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
             </a>
           )}
         </div>
-        {site && (
-          // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
-          // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
-          // is empty, so an in-app transition would keep showing the current report instead of
-          // scanning the dependency. asChild renders the <a> with the button's styling.
-          <Button
-            asChild
-            className="shrink-0 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
-          >
-            <a href={`/report?url=${encodeURIComponent(site)}`}>ANALYZE</a>
-          </Button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <SubscribeBell subKey={subKey} name={protocol.name} />
+          {site && (
+            // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
+            // the analyze mutation — the scan-triggering useEffect only fires when analyze.data
+            // is empty, so an in-app transition would keep showing the current report instead of
+            // scanning the dependency. asChild renders the <a> with the button's styling.
+            <Button
+              asChild
+              className="font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all"
+            >
+              <a href={`/report?url=${encodeURIComponent(site)}`}>ANALYZE</a>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

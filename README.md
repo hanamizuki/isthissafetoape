@@ -55,12 +55,14 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge functions. `refresh-protocols` and `ingest-posts` each guard themselves
-   with a shared secret, so deploy them with JWT verification off (that header is the gate):
+3. Deploy the edge functions. `refresh-protocols`, `ingest-posts`, and `unsubscribe` each
+   authenticate themselves (a shared-secret header, or — for `unsubscribe` — an HMAC signature
+   carried in the link), so deploy them with JWT verification off:
    ```bash
    supabase functions deploy analyze
    supabase functions deploy refresh-protocols --no-verify-jwt
    supabase functions deploy ingest-posts --no-verify-jwt
+   supabase functions deploy unsubscribe --no-verify-jwt
    ```
 4. Set edge function secrets:
    ```bash
@@ -69,6 +71,7 @@ bun run dev
    supabase secrets set BRAVE_SEARCH_API_KEY=...
    supabase secrets set REFRESH_SECRET=$(openssl rand -hex 32)   # gates refresh-protocols
    supabase secrets set INGEST_API_KEY=$(openssl rand -hex 32)   # gates ingest-posts; share with the scraper
+   supabase secrets set HMAC_SECRET=$(openssl rand -hex 32)      # signs unsubscribe links
    ```
 5. Populate and schedule the protocol directory (backs the related-protocols feature).
    `refresh-protocols` is gated on `REFRESH_SECRET` sent as the `x-refresh-key` header, so
