@@ -6,8 +6,9 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 // phishing vector). Each name is resolved to verified metadata:
 //   1. protocol_directory case-insensitive exact name match
 //   2. else prefix match, highest TVL ("Aave" → "Aave V3")
-//   3. else CoinGecko fallback for the homepage (free tier, tolerate failure)
-//   4. else keep the name with no link
+//   3. else fragment match for composite names ("Summer.fi (Lazy Summer Protocol)")
+//   4. else CoinGecko fallback for the homepage (free tier, tolerate failure)
+//   5. else keep the name with no link
 // The primary protocol is resolved too so its slug is cached for subscriptions (feature 2).
 
 export interface Resolution {
@@ -98,6 +99,26 @@ async function resolveViaDirectory(admin: SupabaseClient, name: string): Promise
     .limit(1);
   if (prefix.error) console.error("[enrich] directory prefix lookup failed", { name, error: prefix.error.message });
   if (prefix.data && prefix.data.length > 0) return pickRow(prefix.data[0]);
+
+  // 3. Fragment match — composite names like "Summer.fi (Lazy Summer Protocol)" contain a
+  //    real protocol name that exact/prefix on the full string misses. Split on common
+  //    delimiters and try each part independently; take the highest-TVL hit.
+  const parts = name.split(/[(),\/]+/).map((s) => s.trim()).filter((s) => s.length >= 2).slice(0, 5);
+  if (parts.length > 1) {
+    const hits = await Promise.all(parts.map(async (part) => {
+      const r = await admin
+        .from("protocol_directory")
+        .select("slug, url, category, tvl")
+        .ilike("name", escapeLike(part))
+        .order("tvl", { ascending: false, nullsFirst: false })
+        .limit(1);
+      if (r.error) console.error("[enrich] directory fragment lookup failed", { name, part, error: r.error.message });
+      return r.data?.[0] ?? null;
+    }));
+    const valid = hits.filter((h): h is NonNullable<typeof h> => h != null);
+    const best = valid.sort((a, b) => (b.tvl ?? 0) - (a.tvl ?? 0))[0];
+    if (best) return pickRow(best);
+  }
 
   return null;
 }

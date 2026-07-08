@@ -19,8 +19,9 @@ For each extracted name, the function resolves official metadata from the `proto
 
 1. Case-insensitive exact name match.
 2. Else prefix match (LLM says "Aave", directory has "Aave V3" / "AAVE V2") — pick the highest-TVL row.
-3. Else CoinGecko fallback: `/search` then `/coins/{id}` for the homepage (free tier, strict rate limits, tolerate failure).
-4. Else keep the name with no link.
+3. Else fragment match for composite names (LLM says "Summer.fi (Lazy Summer Protocol)") — split on `(`, `)`, `/`, `,`, try each part as an exact match, pick the highest-TVL hit.
+4. Else CoinGecko fallback: `/search` then `/coins/{id}` for the homepage (free tier, strict rate limits, tolerate failure).
+5. Else keep the name with no link.
 
 The primary protocol itself goes through the same resolution so it can be subscribed to (Feature 2).
 
