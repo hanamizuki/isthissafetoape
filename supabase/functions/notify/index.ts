@@ -521,6 +521,7 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             to: email,
+            from: "alerts@isthissafetoape.com",
             subject,
             body: html,
             headers: {
@@ -571,6 +572,8 @@ Deno.serve(async (req) => {
       stale: staleIds.length,
       fresh: freshPosts.length,
       keywordMatches: postMatches.length,
+      confirmedAlerts: confirmedAlerts.length,
+      userAlertGroups: userAlerts.size,
       notified: totalNotified,
       sendFailures: failedPostIds.size,
     });
