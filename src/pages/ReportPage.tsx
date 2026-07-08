@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, useParams, Link } from "react-router-dom"
-import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn } from "lucide-react"
+import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAnalyze } from "@/hooks/useAnalyze"
 import { useScan } from "@/hooks/useScan"
 import { toast } from "sonner"
-import type { RiskReport, CategoryScore, RedFlag } from "@/types/risk"
+import type { RiskReport, CategoryScore, RedFlag, RelatedProtocol } from "@/types/risk"
 
 function ReportPage() {
   const [searchParams] = useSearchParams()
@@ -239,6 +239,8 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       )}
 
+      <RelatedProtocols report={report} />
+
       <DeepDivePrompt report={report} />
 
       <div className="text-center font-pixel-sm text-[7px] text-muted-foreground/40 pt-4 pb-8 tracking-wider">
@@ -444,6 +446,83 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
       <pre className="text-xs text-muted-foreground/80 bg-black/30 border border-white/[0.06] p-4 overflow-x-auto whitespace-pre-wrap break-words max-h-64 overflow-y-auto font-mono leading-relaxed" tabIndex={0} role="region" aria-label="Deep dive prompt text">
         {prompt}
       </pre>
+    </div>
+  )
+}
+
+// Parse a hostname for display; fall back to the raw string if the URL is malformed.
+// Websites come from a trusted directory / CoinGecko, but a bad value must never crash
+// the whole report render.
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
+
+// Supply-chain dependencies of the analyzed protocol. Hidden entirely when absent (old
+// cached reports) or empty. Each row can re-scan the dependency through the same flow.
+function RelatedProtocols({ report }: { report: RiskReport }) {
+  const related = report.relatedProtocols ?? []
+  if (related.length === 0) return null
+
+  return (
+    <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
+      <div className="flex items-center gap-2 mb-2">
+        <Network className="h-4 w-4 text-cyan-400" />
+        <h2 className="font-pixel text-sm font-bold text-cyan-400 neon-text-cyan">
+          RELATED PROTOCOLS ({related.length})
+        </h2>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
+        Supply-chain dependencies — a failure in any of these can put your funds at risk.
+      </p>
+      <div className="space-y-3">
+        {related.map((p, i) => (
+          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
+  return (
+    <div className="border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/15 transition-colors">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-pixel-sm text-[10px] text-foreground tracking-wider">{protocol.name}</span>
+            {protocol.category && (
+              <span className="font-pixel-sm text-[9px] px-1.5 py-0.5 border border-cyan-500/25 text-cyan-400/80">
+                {protocol.category}
+              </span>
+            )}
+          </div>
+          {protocol.relationship && (
+            <p className="text-sm text-muted-foreground mt-1.5">{protocol.relationship}</p>
+          )}
+          {protocol.website && (
+            <a
+              href={protocol.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 min-h-[44px] text-xs text-cyan-400/70 hover:text-cyan-400 transition-colors"
+            >
+              <ExternalLink className="h-3 w-3 shrink-0" />
+              <span className="truncate font-mono">{safeHostname(protocol.website)}</span>
+            </a>
+          )}
+        </div>
+        {protocol.website && (
+          <Link to={`/report?url=${encodeURIComponent(protocol.website)}`} className="shrink-0">
+            <Button className="font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all">
+              ANALYZE
+            </Button>
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

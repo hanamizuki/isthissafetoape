@@ -19,6 +19,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 
 - **Web research** — fetches the target site via [Jina Reader](https://jina.ai/reader/) and searches external sources via [Brave Search API](https://brave.com/search/api/) before analysis
 - **Deep dive prompt** — generates a copyable prompt from the report so you can hand it to your own AI agent for deeper investigation, with dynamic suggestions based on weak scoring categories
+- **Related protocols** — each report maps the project's DeFi supply-chain dependencies (lending markets, stablecoin issuers, oracles, bridges), because a failure anywhere upstream endangers your funds. Official links are resolved from a trusted source ([DeFiLlama](https://defillama.com/), CoinGecko fallback) — never from the LLM, since a hallucinated URL is a phishing vector — and each dependency has a one-click re-scan
 - Cyberpunk/retro pixel-art UI with neon glow effects
 - Shareable report links (`/report/:id`)
 - 24-hour scan caching per hostname
@@ -54,9 +55,10 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge function:
+3. Deploy the edge functions:
    ```bash
    supabase functions deploy analyze
+   supabase functions deploy refresh-protocols
    ```
 4. Set edge function secrets:
    ```bash
@@ -64,6 +66,23 @@ bun run dev
    supabase secrets set JINA_API_KEY=jina_...
    supabase secrets set BRAVE_SEARCH_API_KEY=...
    ```
+5. Populate and schedule the protocol directory (backs the related-protocols feature):
+   ```bash
+   # First population — call refresh-protocols once with the service-role key:
+   curl -X POST 'https://<ref>.supabase.co/functions/v1/refresh-protocols' \
+     -H "Authorization: Bearer <service-role-key>"
+
+   # Daily refresh via Supabase Cron (pg_cron + pg_net). Run in the SQL Editor:
+   select vault.create_secret('<service-role-key>', 'service_role_key');
+   select cron.schedule('refresh-protocols-daily', '0 3 * * *', $$
+     select net.http_post(
+       url     := 'https://<ref>.supabase.co/functions/v1/refresh-protocols',
+       headers := jsonb_build_object(
+         'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+         'Content-Type', 'application/json')
+     ) $$);
+   ```
+   `refresh-protocols` is gated on the service-role key, so only the cron (or an operator) can trigger the multi-MB DeFiLlama fetch + upsert.
 
 ## License
 
