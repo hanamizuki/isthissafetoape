@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useSubscriptions } from "@/hooks/useSubscriptions"
 import { toast } from "sonner"
 import type { RiskReport, CategoryScore, RedFlag, RelatedProtocol } from "@/types/risk"
+import type { User } from "@supabase/supabase-js"
 
 function ReportPage() {
   const [searchParams] = useSearchParams()
@@ -179,14 +180,18 @@ function XIcon({ className }: { className?: string }) {
   )
 }
 
+// Canonical subscription key: the resolved DeFiLlama slug, else the lowercased name. Must stay
+// in lockstep with the migration and PR 4's email builder.
+const subKeyOf = (slug: string | undefined, name: string) => slug ?? name.toLowerCase()
+
 // Subscribe bell for one protocol (the primary header + each related row). Logged-in users
 // toggle a subscription; anonymous users are routed to /auth first and returned here after
-// login. The subscription key is the DeFiLlama slug when resolved, else the lowercased name.
-function SubscribeBell({ subKey, name }: { subKey: string; name: string }) {
-  const { user } = useAuth()
+// login. `user` is resolved once by ReportContent and drilled down, so the bell makes no auth
+// round-trip of its own.
+function SubscribeBell({ subKey, name, user }: { subKey: string; name: string; user: User | null }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { subscribed, toggle } = useSubscriptions()
+  const { subscribed, toggle, isLoading } = useSubscriptions(user?.id)
   const isOn = subscribed.has(subKey)
 
   const handleClick = () => {
@@ -209,7 +214,7 @@ function SubscribeBell({ subKey, name }: { subKey: string; name: string }) {
   return (
     <button
       onClick={handleClick}
-      disabled={toggle.isPending}
+      disabled={toggle.isPending || isLoading}
       aria-label={isOn ? `Unsubscribe from ${name} alerts` : `Subscribe to ${name} alerts`}
       aria-pressed={isOn}
       className={`flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0 border-2 transition-all disabled:opacity-50 ${
@@ -224,11 +229,14 @@ function SubscribeBell({ subKey, name }: { subKey: string; name: string }) {
 }
 
 function ReportContent({ report }: { report: RiskReport }) {
+  // Resolve auth once here and drill `user` down to every bell — a report with k related
+  // protocols would otherwise spin up k+1 identical useAuth() getUser round-trips + listeners.
+  const { user } = useAuth()
   // Subscription key for the primary protocol: the resolved DeFiLlama slug when present, else
   // the lowercased name. primaryProtocol is absent on reports cached before PR 1 — fall back to
   // projectName so the bell still works (the notify pipeline matches on name too).
   const primaryName = report.primaryProtocol?.name ?? report.projectName
-  const primaryKey = report.primaryProtocol?.slug ?? primaryName.toLowerCase()
+  const primaryKey = subKeyOf(report.primaryProtocol?.slug, primaryName)
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -238,7 +246,7 @@ function ReportContent({ report }: { report: RiskReport }) {
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="font-pixel text-2xl sm:text-3xl font-bold text-white neon-text-cyan">{report.projectName}</h1>
-              <SubscribeBell subKey={primaryKey} name={primaryName} />
+              <SubscribeBell subKey={primaryKey} name={primaryName} user={user} />
             </div>
             <RiskBadge level={report.riskLevel} label={report.riskLabel} />
           </div>
@@ -300,7 +308,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       )}
 
-      <RelatedProtocols report={report} />
+      <RelatedProtocols report={report} user={user} />
 
       <DeepDivePrompt report={report} />
 
@@ -536,7 +544,7 @@ function safeHttpUrl(url: string): string | undefined {
 
 // Supply-chain dependencies of the analyzed protocol. Hidden entirely when absent (old
 // cached reports) or empty. Each row can re-scan the dependency through the same flow.
-function RelatedProtocols({ report }: { report: RiskReport }) {
+function RelatedProtocols({ report, user }: { report: RiskReport; user: User | null }) {
   const related = report.relatedProtocols ?? []
   if (related.length === 0) return null
 
@@ -553,18 +561,18 @@ function RelatedProtocols({ report }: { report: RiskReport }) {
       </p>
       <div className="space-y-3">
         {related.map((p, i) => (
-          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} />
+          <RelatedProtocolRow key={`${p.name}-${i}`} protocol={p} user={user} />
         ))}
       </div>
     </div>
   )
 }
 
-function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
+function RelatedProtocolRow({ protocol, user }: { protocol: RelatedProtocol; user: User | null }) {
   // Gate every link on a validated http(s) URL — protects reports cached before the
   // server-side scheme validation shipped.
   const site = protocol.website ? safeHttpUrl(protocol.website) : undefined
-  const subKey = protocol.slug ?? protocol.name.toLowerCase()
+  const subKey = subKeyOf(protocol.slug, protocol.name)
   return (
     <div className="border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/15 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -593,7 +601,7 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <SubscribeBell subKey={subKey} name={protocol.name} />
+          <SubscribeBell subKey={subKey} name={protocol.name} user={user} />
           {site && (
             // Native <a> (full reload), not <Link>: a client-side route change wouldn't reset
             // the analyze mutation — the scan-triggering useEffect only fires when analyze.data

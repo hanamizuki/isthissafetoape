@@ -14,7 +14,9 @@ create table public.subscriptions (
 
 comment on table public.subscriptions is 'Per-user protocol subscriptions driving security-alert emails';
 
-create index idx_subscriptions_user_id on public.subscriptions(user_id);
+-- No separate user_id index: the unique(user_id, protocol_slug) constraint's btree is led by
+-- user_id, so it already serves the per-user lookups (leftmost-prefix scan). A single-column
+-- user_id index would only add write cost.
 
 alter table public.subscriptions enable row level security;
 
