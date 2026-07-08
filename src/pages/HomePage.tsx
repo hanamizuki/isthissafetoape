@@ -58,7 +58,7 @@ function HomePage() {
               <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
                 FREE &middot; 3/DAY
               </span>
-              <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:border-cyan-500/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+              <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-400/30 text-cyan-400 hover:border-cyan-400/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                 <LogIn className="h-3 w-3" />
                 <span className="hidden md:inline">SIGN IN</span>
               </Link>
@@ -84,13 +84,13 @@ function HomePage() {
 
         {/* Search bar */}
         <div className="max-w-2xl mx-auto mb-16">
-          <div className="flex gap-2 p-2 border-2 border-cyan-500/25 bg-card/50 backdrop-blur-sm neon-box-cyan">
+          <div className="flex gap-2 p-2 border-2 border-cyan-400/25 bg-card/50 backdrop-blur-sm neon-box-cyan">
             <Input
               placeholder="> enter_url..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-              className="h-12 text-sm font-mono bg-transparent border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-cyan-500/30"
+              className="h-12 text-sm font-mono bg-transparent border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-cyan-400/30"
             />
             <Button
               size="lg"
@@ -184,7 +184,7 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
   return (
     <button
       onClick={() => navigate(`/report/${scan.id}`)}
-      className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/[0.06] bg-white/[0.01] hover:border-cyan-500/20 hover:bg-white/[0.02] transition-all text-left group"
+      className="w-full flex items-center gap-3 px-4 py-3 border-2 border-white/[0.06] bg-white/[0.01] hover:border-cyan-400/20 hover:bg-white/[0.02] transition-all text-left group"
     >
       {scan.total_score != null && (
         <span className={`font-mono text-base font-bold shrink-0 w-10 text-center ${scoreColor}`}>
@@ -203,9 +203,9 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
 function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: "cyan" | "emerald" | "pink" }) {
   const colorMap = {
     cyan: {
-      border: "border-cyan-500/15 hover:border-cyan-500/40",
+      border: "border-cyan-400/15 hover:border-cyan-400/40",
       glow: "hover:shadow-[0_0_15px_rgba(34,211,238,0.1)]",
-      icon: "text-cyan-400 border-cyan-500/30",
+      icon: "text-cyan-400 border-cyan-400/30",
       title: "text-cyan-400",
     },
     emerald: {

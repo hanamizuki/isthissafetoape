@@ -140,7 +140,7 @@ The four-stop scale that colors every score, gauge segment, risk badge, and red-
 ### Named Rules
 **The Risk-Color Rule.** The green→yellow→orange→pink spectrum means exactly one thing: verdict severity. Never use a spectrum color for decoration, mood, or brand flourish. If pink appears, something is dangerous. If a screen wants "a warm accent," it uses Neon Cyan, not the spectrum.
 
-**The One-Cyan Rule.** Three cyans currently drift across the app — Neon Cyan (`#22d3ee`), Primary Teal (`#0df2db`), and Cyan Action (`#06b6d4`). Neon Cyan is canonical brand; Cyan Action is the CTA fill; Primary Teal is the inherited focus-ring token. Do not introduce a fourth. When two would read as "the same cyan" to a user, converge on Neon Cyan.
+**The One-Cyan Rule.** Three cyans, one role each — Neon Cyan (`#22d3ee`, `cyan-400`): brand text, borders, glow, kickers; Cyan Action (`#06b6d4`, `cyan-500`): the CTA fill only; Primary Teal (`#0df2db`, `--ring`): the focus-ring token. Borders and glow both sit on Neon Cyan. Do not introduce a fourth. When two would read as "the same cyan" to a user, converge on Neon Cyan.
 
 **The Readable-Ink Rule.** Reading text is Ink (`#d7e8ea`) or, at most, Ink Muted (`#6c8093`) at full opacity. Gray-on-neon and low-opacity muted text on Void fail contrast; if body copy is even close to 4.5:1, it goes to Ink.
 

@@ -57,7 +57,7 @@ function ReportPage() {
         </Link>
 
         {displayUrl && (
-          <div className="flex items-center gap-2 text-sm mb-8 border-2 border-cyan-500/15 bg-card/50 px-4 py-2.5">
+          <div className="flex items-center gap-2 text-sm mb-8 border-2 border-cyan-400/15 bg-card/50 px-4 py-2.5">
             <span className="font-pixel-sm text-[10px] text-cyan-400">TARGET:</span>
             <span className="text-foreground truncate font-mono text-xs">{displayUrl}</span>
             <a href={displayUrl} target="_blank" rel="noopener noreferrer" className="ml-auto shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors">
@@ -151,7 +151,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
       <span className="font-pixel-sm text-[10px] text-muted-foreground mr-1">SHARE:</span>
       <button
         onClick={copyLink}
-        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-400/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/40 transition-all text-cyan-400 text-xs"
       >
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
         <span className="font-pixel-sm text-[10px]">{copied ? "COPIED" : "LINK"}</span>
@@ -160,7 +160,7 @@ function ShareButtons({ report }: { report: RiskReport }) {
         href={twitterUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400 text-xs"
+        className="flex items-center gap-1.5 px-3 min-h-[44px] border-2 border-cyan-400/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/40 transition-all text-cyan-400 text-xs"
       >
         <XIcon className="h-3 w-3" />
         <span className="font-pixel-sm text-[10px]">POST</span>
@@ -193,7 +193,7 @@ function ReportContent({ report }: { report: RiskReport }) {
         </div>
       </div>
 
-      <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
+      <div className="border-2 border-cyan-400/15 bg-card/50 p-5 neon-box-cyan">
         <h2 className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider mb-2">TL;DR</h2>
         <p className="text-sm text-foreground leading-relaxed">{report.tldr}</p>
       </div>
@@ -431,7 +431,7 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
   }
 
   return (
-    <div className="border-2 border-cyan-500/15 bg-card/50 p-5 neon-box-cyan">
+    <div className="border-2 border-cyan-400/15 bg-card/50 p-5 neon-box-cyan">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">
           TAKE THIS TO YOUR AI AGENT
@@ -439,7 +439,7 @@ function DeepDivePrompt({ report }: { report: RiskReport }) {
         <button
           onClick={handleCopy}
           aria-label={copied ? "Prompt copied to clipboard" : "Copy deep dive prompt to clipboard"}
-          className="flex items-center justify-center min-w-[44px] min-h-[44px] border-2 border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all text-cyan-400"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] border-2 border-cyan-400/20 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/40 transition-all text-cyan-400"
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
@@ -462,7 +462,7 @@ function CategoryCard({ category }: { category: CategoryScore }) {
   const color = pct >= 70 ? "#10b981" : pct >= 50 ? "#e8ff00" : pct >= 30 ? "#f97316" : "#ff2d78"
 
   return (
-    <div className="border-2 border-white/[0.08] bg-white/[0.01] overflow-hidden hover:border-cyan-500/15 transition-colors">
+    <div className="border-2 border-white/[0.08] bg-white/[0.01] overflow-hidden hover:border-cyan-400/15 transition-colors">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-colors text-left"

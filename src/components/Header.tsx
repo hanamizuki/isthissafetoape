@@ -16,7 +16,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         Skip to main content
       </a>
       {/* Opaque bg on mobile to skip backdrop-blur compositing; translucent + blur on desktop */}
-      <header className="relative z-10 border-b-2 border-cyan-500/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
+      <header className="relative z-10 border-b-2 border-cyan-400/20 bg-background md:bg-background/90 md:backdrop-blur-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
           <img src="/shield-logo.png" alt="" className="h-7 w-7 neon-drop-cyan" />

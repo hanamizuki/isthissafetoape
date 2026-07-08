@@ -53,7 +53,7 @@ function AuthPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="border-2 border-cyan-500/15 bg-card/50 p-6 space-y-4 neon-box-cyan">
+          <div className="border-2 border-cyan-400/15 bg-card/50 p-6 space-y-4 neon-box-cyan">
             <div className="space-y-2">
               <Label htmlFor="email" className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">EMAIL</Label>
               <Input
@@ -63,7 +63,7 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-500/40"
+                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-400/40"
               />
             </div>
             <div className="space-y-2">
@@ -76,7 +76,7 @@ function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-500/40"
+                className="h-10 bg-transparent border-2 border-white/10 rounded-none font-mono text-sm focus-visible:ring-0 focus-visible:border-cyan-400/40"
               />
             </div>
             <Button
