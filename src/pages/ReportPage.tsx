@@ -461,6 +461,18 @@ function safeHostname(url: string): string {
   }
 }
 
+// Only http(s) websites may become a clickable link. Render-side last line of defense:
+// the server now validates on the way into report_json, but reports cached before that
+// shipped can still hold a `javascript:`/`data:` value — never turn one into an href.
+function safeHttpUrl(url: string): string | undefined {
+  try {
+    const proto = new URL(url).protocol
+    return proto === "https:" || proto === "http:" ? url : undefined
+  } catch {
+    return undefined
+  }
+}
+
 // Supply-chain dependencies of the analyzed protocol. Hidden entirely when absent (old
 // cached reports) or empty. Each row can re-scan the dependency through the same flow.
 function RelatedProtocols({ report }: { report: RiskReport }) {
@@ -488,6 +500,9 @@ function RelatedProtocols({ report }: { report: RiskReport }) {
 }
 
 function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
+  // Gate every link on a validated http(s) URL — protects reports cached before the
+  // server-side scheme validation shipped.
+  const site = protocol.website ? safeHttpUrl(protocol.website) : undefined
   return (
     <div className="border-2 border-white/[0.08] bg-white/[0.01] p-4 hover:border-cyan-500/15 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -503,20 +518,20 @@ function RelatedProtocolRow({ protocol }: { protocol: RelatedProtocol }) {
           {protocol.relationship && (
             <p className="text-sm text-muted-foreground mt-1.5">{protocol.relationship}</p>
           )}
-          {protocol.website && (
+          {site && (
             <a
-              href={protocol.website}
+              href={site}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 min-h-[44px] text-xs text-cyan-400/70 hover:text-cyan-400 transition-colors"
             >
               <ExternalLink className="h-3 w-3 shrink-0" />
-              <span className="truncate font-mono">{safeHostname(protocol.website)}</span>
+              <span className="truncate font-mono">{safeHostname(site)}</span>
             </a>
           )}
         </div>
-        {protocol.website && (
-          <Link to={`/report?url=${encodeURIComponent(protocol.website)}`} className="shrink-0">
+        {site && (
+          <Link to={`/report?url=${encodeURIComponent(site)}`} className="shrink-0">
             <Button className="font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none bg-cyan-500/10 border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-all">
               ANALYZE
             </Button>

@@ -12,23 +12,20 @@ export interface RedFlag {
   severity: "critical" | "high" | "medium"
 }
 
-// A supply-chain dependency of the analyzed protocol. name/relationship come from the
-// LLM; website/category/slug are resolved server-side from a trusted source (never the
-// LLM — a hallucinated URL is a phishing vector). Unresolved entries carry name only.
-export interface RelatedProtocol {
-  name: string
-  relationship: string
-  website?: string
-  category?: string
-  slug?: string
-}
-
-// The analyzed protocol itself, resolved so it can be subscribed to (feature 2).
+// A resolved protocol: name plus verified metadata. website/category/slug are resolved
+// server-side from a trusted source (never the LLM — a hallucinated URL is a phishing
+// vector); unresolved entries carry the name only. Used for the analyzed protocol itself,
+// resolved so it can be subscribed to (feature 2).
 export interface PrimaryProtocol {
   name: string
   website?: string
   category?: string
   slug?: string
+}
+
+// A supply-chain dependency: a resolved protocol plus how the analyzed project depends on it.
+export interface RelatedProtocol extends PrimaryProtocol {
+  relationship: string
 }
 
 export interface RiskReport {

@@ -1,11 +1,22 @@
 // Pure-logic checks for the related-protocol enrichment. Run with: deno test
 import { assertEquals } from "jsr:@std/assert@1";
-import { buildEnrichedRelated, escapeLike, pickRow, type Resolution } from "./enrich.ts";
+import { buildEnrichedRelated, escapeLike, pickRow, type Resolution, safeWebUrl } from "./enrich.ts";
 
-Deno.test("escapeLike neutralizes LIKE wildcards", () => {
+Deno.test("escapeLike neutralizes LIKE + PostgREST wildcards", () => {
   assertEquals(escapeLike("Aave"), "Aave"); // no metachars → unchanged
   assertEquals(escapeLike("100%_pool"), "100\\%\\_pool");
   assertEquals(escapeLike("a\\b"), "a\\\\b");
+  assertEquals(escapeLike("A*B"), "A\\*B"); // PostgREST aliases * → %, so escape it too
+});
+
+Deno.test("safeWebUrl passes http(s), rejects everything else", () => {
+  assertEquals(safeWebUrl("https://aave.com"), "https://aave.com");
+  assertEquals(safeWebUrl("http://x.io/p?a=1"), "http://x.io/p?a=1");
+  assertEquals(safeWebUrl("javascript:alert(1)"), undefined);
+  assertEquals(safeWebUrl("data:text/html,<script>"), undefined);
+  assertEquals(safeWebUrl("not a url"), undefined);
+  assertEquals(safeWebUrl(null), undefined);
+  assertEquals(safeWebUrl(undefined), undefined);
 });
 
 Deno.test("pickRow keeps present fields and drops empty ones", () => {

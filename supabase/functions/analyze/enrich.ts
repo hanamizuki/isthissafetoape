@@ -23,8 +23,25 @@ export interface RelatedEnriched extends Resolution {
 
 // Escape LIKE metacharacters so a protocol name containing % or _ can't act as a
 // wildcard in the ILIKE queries below. Postgres LIKE uses backslash as the escape char.
+// `*` is escaped too because PostgREST aliases `*` → `%` before it reaches Postgres;
+// escaping it can only make a `*`-bearing name fail to match (falling through to
+// CoinGecko / name-only), never widen the pattern to a wrong row.
 export function escapeLike(s: string): string {
-  return s.replace(/[\\%_]/g, "\\$&");
+  return s.replace(/[\\%_*]/g, "\\$&");
+}
+
+// A resolved website is only safe to render as a link if it is http(s). The directory and
+// CoinGecko feeds are third-party / community-contributed, so a `javascript:` or `data:`
+// value must never reach an href — validate the scheme at this trust boundary, before the
+// value is cached in report_json and rendered.
+export function safeWebUrl(u: string | null | undefined): string | undefined {
+  if (typeof u !== "string") return undefined;
+  try {
+    const proto = new URL(u).protocol;
+    return proto === "https:" || proto === "http:" ? u : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 // Project a protocol_directory row to the Resolution shape, dropping empty fields so the
@@ -33,7 +50,8 @@ export function pickRow(
   row: { slug?: string | null; url?: string | null; category?: string | null },
 ): Resolution {
   const out: Resolution = {};
-  if (row.url) out.website = row.url;
+  const website = safeWebUrl(row.url);
+  if (website) out.website = website;
   if (row.category) out.category = row.category;
   if (row.slug) out.slug = row.slug;
   return out;
@@ -80,23 +98,40 @@ async function resolveViaDirectory(admin: SupabaseClient, name: string): Promise
   return null;
 }
 
+// Loose name normalization for the CoinGecko match guard: lowercase, strip non-alphanumerics.
+function normalizeName(s: unknown): string {
+  return typeof s === "string" ? s.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+}
+
 async function resolveViaCoinGecko(name: string): Promise<Resolution | null> {
   try {
+    // Best-effort and on the synchronous analyze path, so the timeout is tight (4s).
     const search = await fetch(
       `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(name)}`,
-      { signal: AbortSignal.timeout(8_000) },
+      { signal: AbortSignal.timeout(4_000) },
     );
     if (!search.ok) {
       await search.body?.cancel();
       return null;
     }
     const sj = await search.json();
-    const id = sj?.coins?.[0]?.id;
-    if (typeof id !== "string" || !id) return null;
+    const top = sj?.coins?.[0];
+    const id = typeof top?.id === "string" ? top.id : "";
+    // Don't blindly trust the top search hit: CoinGecko ranks by relevance, but a query
+    // like "Compound" or "ENA" can surface a same-named memecoin whose homepage would then
+    // be presented as the protocol's verified official site. A wrong "official website" is
+    // worse than no link in a security product — only trust the hit when its name/id
+    // plausibly matches the query.
+    const q = normalizeName(name);
+    const plausible = q.length >= 2 && [top?.name, top?.id].some((v) => {
+      const nv = normalizeName(v);
+      return nv.length >= 3 && (nv.includes(q) || q.includes(nv));
+    });
+    if (!id || !plausible) return null;
 
     const coin = await fetch(
       `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`,
-      { signal: AbortSignal.timeout(8_000) },
+      { signal: AbortSignal.timeout(4_000) },
     );
     if (!coin.ok) {
       await coin.body?.cancel();
@@ -106,14 +141,15 @@ async function resolveViaCoinGecko(name: string): Promise<Resolution | null> {
     const homepage = Array.isArray(cj?.links?.homepage)
       ? cj.links.homepage.find((h: unknown) => typeof h === "string" && h.length > 0)
       : undefined;
-    if (!homepage) return null;
+    const website = safeWebUrl(homepage);
+    if (!website) return null;
 
     // CoinGecko-resolved protocols have no DeFiLlama slug, so subscriptions (feature 2)
     // fall back to the lowercased name — slug stays undefined here on purpose.
     const category = Array.isArray(cj?.categories)
       ? cj.categories.find((c: unknown) => typeof c === "string" && c.length > 0)
       : undefined;
-    const out: Resolution = { website: homepage };
+    const out: Resolution = { website };
     if (typeof category === "string") out.category = category;
     return out;
   } catch (err) {
@@ -151,19 +187,28 @@ export async function enrichReport(
   const llmRelated = report.relatedProtocols;
   const primaryName = typeof report.projectName === "string" ? report.projectName.trim() : "";
 
-  // Unique names (primary + related), resolved once each and reused — this dedupe keeps
-  // duplicate names from spending two CoinGecko calls against the free-tier rate limit.
-  const names = new Set<string>();
-  if (primaryName) names.add(primaryName);
-  if (Array.isArray(llmRelated)) {
-    for (const r of llmRelated) {
-      if (typeof r?.name === "string" && r.name.trim()) names.add(r.name.trim());
-    }
-  }
+  // Unique names (primary first, then related), deduped case-insensitively so "Aave" and
+  // "AAVE" resolve once, and bounded so a long relatedProtocols array (LLM-controlled,
+  // untrusted length) can't fan out into an unbounded CoinGecko burst on the synchronous
+  // analyze path. The primary is added first, so the cap never drops it.
+  const seen = new Set<string>();
+  const names: string[] = [];
+  const addName = (n: unknown) => {
+    if (typeof n !== "string") return;
+    const t = n.trim();
+    if (!t) return;
+    const key = t.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    names.push(t);
+  };
+  addName(primaryName);
+  if (Array.isArray(llmRelated)) for (const r of llmRelated) addName(r?.name);
+  const bounded = names.slice(0, 15); // ponytail: cap LLM-driven fan-out on the hot path
 
   const resolutions = new Map<string, Resolution>();
   await Promise.all(
-    [...names].map(async (n) => {
+    bounded.map(async (n) => {
       resolutions.set(n.toLowerCase(), await resolveProtocol(admin, n));
     }),
   );
