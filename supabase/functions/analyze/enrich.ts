@@ -84,6 +84,9 @@ async function resolveViaDirectory(admin: SupabaseClient, name: string): Promise
     .ilike("name", escaped)
     .order("tvl", { ascending: false, nullsFirst: false })
     .limit(1);
+  // Log a genuine query error (table missing/misconfigured, connection issue) so it's
+  // distinguishable from a plain no-match — resolution still degrades gracefully below.
+  if (exact.error) console.error("[enrich] directory exact lookup failed", { name, error: exact.error.message });
   if (exact.data && exact.data.length > 0) return pickRow(exact.data[0]);
 
   // 2. Prefix match, highest TVL ("Aave" → "Aave V3" over "Aave V2").
@@ -93,6 +96,7 @@ async function resolveViaDirectory(admin: SupabaseClient, name: string): Promise
     .ilike("name", `${escaped}%`)
     .order("tvl", { ascending: false, nullsFirst: false })
     .limit(1);
+  if (prefix.error) console.error("[enrich] directory prefix lookup failed", { name, error: prefix.error.message });
   if (prefix.data && prefix.data.length > 0) return pickRow(prefix.data[0]);
 
   return null;
@@ -118,12 +122,13 @@ async function resolveViaCoinGecko(name: string): Promise<Resolution | null> {
     const top = sj?.coins?.[0];
     const id = typeof top?.id === "string" ? top.id : "";
     // Don't blindly trust the top search hit: CoinGecko ranks by relevance, but a query
-    // like "Compound" or "ENA" can surface a same-named memecoin whose homepage would then
-    // be presented as the protocol's verified official site. A wrong "official website" is
-    // worse than no link in a security product — only trust the hit when its name/id
-    // plausibly matches the query.
+    // like "Compound" can surface a same-named memecoin whose homepage would then be
+    // presented as the protocol's verified official site. A wrong "official website" is
+    // worse than no link in a security product — only trust the hit when its name, id, or
+    // symbol plausibly matches the query. Symbol is included because DeFi protocols are
+    // frequently referred to by their token symbol (USDT, WBTC, MKR).
     const q = normalizeName(name);
-    const plausible = q.length >= 2 && [top?.name, top?.id].some((v) => {
+    const plausible = q.length >= 2 && [top?.name, top?.id, top?.symbol].some((v) => {
       const nv = normalizeName(v);
       return nv.length >= 3 && (nv.includes(q) || q.includes(nv));
     });
