@@ -55,14 +55,15 @@ bun run dev
 
 1. Create a Supabase project
 2. Run the migrations in `supabase/migrations/` in order
-3. Deploy the edge functions. `refresh-protocols`, `ingest-posts`, and `unsubscribe` each
-   authenticate themselves (a shared-secret header, or — for `unsubscribe` — an HMAC signature
-   carried in the link), so deploy them with JWT verification off:
+3. Deploy the edge functions. `refresh-protocols`, `ingest-posts`, `unsubscribe`, and `notify`
+   each authenticate themselves (a shared-secret header, or — for `unsubscribe` — an HMAC
+   signature carried in the link), so deploy them with JWT verification off:
    ```bash
    supabase functions deploy analyze
    supabase functions deploy refresh-protocols --no-verify-jwt
    supabase functions deploy ingest-posts --no-verify-jwt
    supabase functions deploy unsubscribe --no-verify-jwt
+   supabase functions deploy notify --no-verify-jwt
    ```
 4. Set edge function secrets:
    ```bash
@@ -72,6 +73,9 @@ bun run dev
    supabase secrets set REFRESH_SECRET=$(openssl rand -hex 32)   # gates refresh-protocols
    supabase secrets set INGEST_API_KEY=$(openssl rand -hex 32)   # gates ingest-posts; share with the scraper
    supabase secrets set HMAC_SECRET=$(openssl rand -hex 32)      # signs unsubscribe links
+   supabase secrets set NOTIFY_SECRET=$(openssl rand -hex 32)    # gates notify pipeline
+   supabase secrets set PLUNK_SECRET_KEY=...                     # Plunk API key for alert emails
+   supabase secrets set PLUNK_BASE_URL=https://api.plunk.hanamizuki.tw  # self-hosted Plunk instance
    ```
 5. Populate and schedule the protocol directory (backs the related-protocols feature).
    `refresh-protocols` is gated on `REFRESH_SECRET` sent as the `x-refresh-key` header, so
@@ -100,6 +104,25 @@ bun run dev
      -H "x-ingest-key: <INGEST_API_KEY>" -H 'Content-Type: application/json' \
      -d '{"posts":[{"post_url":"...","source_account":"...","author":"...","post_type":"original","text":"...","created_at":"2026-07-08T00:00:00Z","quoted_url":null}]}'
    # → {"inserted": N, "skipped": M}
+   ```
+7. Alert pipeline (`notify`): scans unprocessed posts hourly, matches against subscribed
+   protocols (keyword prefilter + LLM precision check), and emails subscribers via Plunk.
+   Gated on `NOTIFY_SECRET` via the `x-notify-key` header:
+   ```bash
+   # Manual trigger:
+   curl -X POST 'https://<ref>.supabase.co/functions/v1/notify' \
+     -H "x-notify-key: <NOTIFY_SECRET>"
+   ```
+   ```sql
+   -- Hourly schedule via Supabase Cron (pg_cron + pg_net). Run in the SQL Editor:
+   select vault.create_secret('<NOTIFY_SECRET>', 'notify_secret');
+   select cron.schedule('notify-hourly', '15 * * * *', $$
+     select net.http_post(
+       url     := 'https://<ref>.supabase.co/functions/v1/notify',
+       headers := jsonb_build_object(
+         'x-notify-key', (select decrypted_secret from vault.decrypted_secrets where name = 'notify_secret'),
+         'Content-Type', 'application/json')
+     ) $$);
    ```
 
 ## License
