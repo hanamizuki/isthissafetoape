@@ -41,7 +41,7 @@ function HomePage() {
               <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history" aria-label="Scan history">
                 <Clock className="h-4 w-4" />
               </Link>
-              <span className="hidden sm:inline font-pixel-sm text-[10px] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
+              <span className="hidden sm:inline-flex items-center h-11 px-3 border-2 border-emerald-500/25 font-pixel-sm text-[10px] text-emerald-400">
                 UNLIMITED
               </span>
               <button
@@ -55,10 +55,10 @@ function HomePage() {
             </>
           ) : (
             <>
-              <span className="hidden md:inline font-pixel-sm text-[10px] text-cyan-400 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
+              <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-cyan-500/25 font-pixel-sm text-[10px] text-cyan-400">
                 FREE &middot; 3/DAY
               </span>
-              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+              <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:border-cyan-500/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                 <LogIn className="h-3 w-3" />
                 <span className="hidden md:inline">SIGN IN</span>
               </Link>
