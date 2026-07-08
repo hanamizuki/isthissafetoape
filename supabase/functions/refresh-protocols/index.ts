@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
     // Dedupe by slug (the primary key): DeFiLlama occasionally lists a slug twice, and a
     // single upsert batch that touches the same PK row twice errors ("ON CONFLICT DO
     // UPDATE cannot affect row a second time"). Keep the highest-TVL occurrence.
+    // Coerce optional text fields to string-or-null: an unexpected object/array from the
+    // feed would otherwise be sent to a text column and fail the whole batch upsert.
+    const str = (v: unknown): string | null => (typeof v === "string" ? v : null);
     const bySlug = new Map<string, DirectoryRow>();
     for (const p of protocols as LlamaProtocol[]) {
       // Guard against a null/non-object element (accessing p.slug on null would throw and
@@ -95,10 +98,10 @@ Deno.serve(async (req) => {
       bySlug.set(p.slug, {
         slug: p.slug,
         name: p.name,
-        url: p.url ?? null,
-        category: p.category ?? null,
-        twitter: p.twitter ?? null,
-        gecko_id: p.gecko_id ?? null,
+        url: str(p.url),
+        category: str(p.category),
+        twitter: str(p.twitter),
+        gecko_id: str(p.gecko_id),
         tvl,
         updated_at: now,
       });

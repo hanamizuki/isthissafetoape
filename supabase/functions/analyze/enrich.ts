@@ -166,11 +166,23 @@ async function resolveViaCoinGecko(name: string): Promise<Resolution | null> {
   }
 }
 
-// Directory first, CoinGecko fallback, name-only last. Never throws.
-export async function resolveProtocol(admin: SupabaseClient, name: string): Promise<Resolution> {
+// Directory first, CoinGecko fallback, name-only last. Never throws. `cgBudget` caps how
+// many CoinGecko lookups one analysis may spend — the check + decrement is synchronous
+// (no await between them), so it bounds even the concurrent Promise.all fan-out. Beyond
+// the cap a directory miss yields name-only rather than bursting CoinGecko's rate-limited
+// free tier.
+export async function resolveProtocol(
+  admin: SupabaseClient,
+  name: string,
+  cgBudget?: { remaining: number },
+): Promise<Resolution> {
   try {
     const dir = await resolveViaDirectory(admin, name);
     if (dir) return dir;
+    if (cgBudget) {
+      if (cgBudget.remaining <= 0) return {};
+      cgBudget.remaining--;
+    }
     const cg = await resolveViaCoinGecko(name);
     if (cg) return cg;
   } catch (err) {
@@ -211,10 +223,14 @@ export async function enrichReport(
   if (Array.isArray(llmRelated)) for (const r of llmRelated) addName(r?.name);
   const bounded = names.slice(0, 15); // ponytail: cap LLM-driven fan-out on the hot path
 
+  // Cap CoinGecko fallbacks per analysis so a batch of directory misses can't burst its
+  // rate-limited free tier; extra misses degrade to name-only. Directory lookups are cheap
+  // and stay uncapped.
+  const cgBudget = { remaining: 5 };
   const resolutions = new Map<string, Resolution>();
   await Promise.all(
     bounded.map(async (n) => {
-      resolutions.set(n.toLowerCase(), await resolveProtocol(admin, n));
+      resolutions.set(n.toLowerCase(), await resolveProtocol(admin, n, cgBudget));
     }),
   );
 
