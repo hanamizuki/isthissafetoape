@@ -99,6 +99,24 @@ async function resolveViaDirectory(admin: SupabaseClient, name: string): Promise
   if (prefix.error) console.error("[enrich] directory prefix lookup failed", { name, error: prefix.error.message });
   if (prefix.data && prefix.data.length > 0) return pickRow(prefix.data[0]);
 
+  // 3. Fragment match — composite names like "Summer.fi (Lazy Summer Protocol)" contain a
+  //    real protocol name that exact/prefix on the full string misses. Split on common
+  //    delimiters and try each part independently; take the highest-TVL hit.
+  const parts = name.split(/[(),\/]+/).map((s) => s.trim()).filter((s) => s.length >= 2);
+  if (parts.length > 1) {
+    const hits = await Promise.all(parts.map(async (part) => {
+      const r = await admin
+        .from("protocol_directory")
+        .select("slug, url, category, tvl")
+        .ilike("name", escapeLike(part))
+        .order("tvl", { ascending: false, nullsFirst: false })
+        .limit(1);
+      return r.data?.[0] ?? null;
+    }));
+    const best = hits.filter(Boolean).sort((a, b) => ((b as { tvl?: number }).tvl ?? 0) - ((a as { tvl?: number }).tvl ?? 0))[0];
+    if (best) return pickRow(best);
+  }
+
   return null;
 }
 
