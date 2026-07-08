@@ -89,7 +89,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
       <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
         <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-pixel-sm text-[8px]">HOME</span>
+          <span className="font-pixel-sm text-[10px]">HOME</span>
         </Link>
 
         <div className="flex items-center gap-3 mb-6">
@@ -126,7 +126,7 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
         {scan.total_score != null && (
           <div className={`shrink-0 w-14 h-14 border-2 flex flex-col items-center justify-center ${scoreColor}`}>
             <span className="font-pixel text-lg font-bold">{scan.total_score}</span>
-            <span className="font-pixel-sm text-[6px] opacity-60">/{scan.max_score}</span>
+            <span className="font-pixel-sm text-[10px] text-muted-foreground">/{scan.max_score}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -135,7 +135,7 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
               {scan.project_name || scan.url_hostname}
             </span>
             {scan.risk_label && (
-              <span className={`font-pixel-sm text-[7px] px-1.5 py-0.5 border shrink-0 ${scoreColor}`}>
+              <span className={`font-pixel-sm text-[10px] px-1.5 py-0.5 border shrink-0 ${scoreColor}`}>
                 {scan.risk_label}
               </span>
             )}
@@ -145,9 +145,9 @@ function ScanCard({ scan, onClick }: { scan: ScanSummary; onClick: () => void })
             <ExternalLink className="h-3 w-3 shrink-0 opacity-50" />
           </div>
           {scan.tldr && (
-            <p className="text-xs text-muted-foreground/70 line-clamp-2">{scan.tldr}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{scan.tldr}</p>
           )}
-          <div className="text-[10px] text-muted-foreground/40 mt-2 font-pixel-sm">{timeAgo}</div>
+          <div className="text-[10px] text-muted-foreground mt-2 font-pixel-sm">{timeAgo}</div>
         </div>
       </div>
     </button>

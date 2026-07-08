@@ -41,7 +41,7 @@ function HomePage() {
               <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history" aria-label="Scan history">
                 <Clock className="h-4 w-4" />
               </Link>
-              <span className="font-pixel-sm text-[7px] text-emerald-400/70 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
+              <span className="hidden sm:inline font-pixel-sm text-[10px] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 border-2 border-emerald-500/20 neon-box-green">
                 UNLIMITED
               </span>
               <button
@@ -55,10 +55,10 @@ function HomePage() {
             </>
           ) : (
             <>
-              <span className="hidden md:inline font-pixel-sm text-[7px] text-cyan-400/70 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
+              <span className="hidden md:inline font-pixel-sm text-[10px] text-cyan-400 bg-cyan-500/10 px-3 py-1.5 border-2 border-cyan-500/20">
                 FREE &middot; 3/DAY
               </span>
-              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[8px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+              <Link to="/auth" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                 <LogIn className="h-3 w-3" />
                 <span className="hidden md:inline">SIGN IN</span>
               </Link>
@@ -103,7 +103,7 @@ function HomePage() {
           </div>
           <div className="flex items-center gap-2 mt-3 justify-center">
             <div className="w-2 h-2 bg-emerald-400 animate-blink" />
-            <span className="font-pixel-sm text-[7px] text-emerald-400/60">READY TO SCAN</span>
+            <span className="font-pixel-sm text-[10px] text-emerald-400">READY TO SCAN</span>
           </div>
         </div>
 
@@ -112,7 +112,7 @@ function HomePage() {
           <div className="mb-14">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-cyan-400/60" />
-              <span className="font-pixel text-sm text-cyan-400/80">Recent Scans</span>
+              <span className="font-pixel text-sm text-cyan-400">Recent Scans</span>
             </div>
             <div className="space-y-2">
               {recentScans.data.map(scan => (
@@ -163,7 +163,7 @@ function HomePage() {
         </div>
 
         {/* Bottom */}
-        <div className="text-center mt-14 font-pixel-sm text-[6px] text-muted-foreground/40 tracking-wider">
+        <div className="text-center mt-14 font-pixel-sm text-[10px] text-muted-foreground tracking-wider">
           POWERED BY AI &middot; NOT FINANCIAL ADVICE &middot; ALWAYS DYOR
         </div>
       </main>
@@ -194,7 +194,7 @@ function RecentScanRow({ scan }: { scan: { id: number; project_name: string | nu
       <span className="font-pixel text-xs text-white group-hover:text-cyan-400 transition-colors truncate flex-1">
         {scan.project_name || scan.url_hostname}
       </span>
-      <span className="font-pixel-sm text-[6px] text-muted-foreground/40 shrink-0">{timeAgo}</span>
+      <span className="font-pixel-sm text-[10px] text-muted-foreground shrink-0">{timeAgo}</span>
     </button>
   )
 }

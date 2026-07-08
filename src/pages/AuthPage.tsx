@@ -55,7 +55,7 @@ function AuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="border-2 border-cyan-500/15 bg-card/50 p-6 space-y-4 neon-box-cyan">
             <div className="space-y-2">
-              <Label htmlFor="email" className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">EMAIL</Label>
+              <Label htmlFor="email" className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">EMAIL</Label>
               <Input
                 id="email"
                 type="email"
@@ -67,7 +67,7 @@ function AuthPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="font-pixel-sm text-[8px] text-cyan-400 tracking-wider">PASSWORD</Label>
+              <Label htmlFor="password" className="font-pixel-sm text-[10px] text-cyan-400 tracking-wider">PASSWORD</Label>
               <Input
                 id="password"
                 type="password"
