@@ -49,17 +49,22 @@ function AuthPage() {
   // live URL below, because the SDK strips the code on success.
   const [wasCallback] = useState(() => readAuthParams().code !== null)
 
-  // Visiting /auth fresh — no callback params and no ?redirect= — starts a
-  // NEW sign-in intent: discard any stale destination left by an earlier
-  // abandoned attempt, so e.g. the home-page sign-in link doesn't land on an
-  // old report. The retry path is unaffected: a cancel callback arrives WITH
-  // params, and TRY AGAIN reuses this mounted page. Declared before the
-  // navigate effect below so an already-signed-in visit can't consume the
-  // stale value first.
+  // Visiting /auth without a VALID destination — no ?redirect=, or one that
+  // sanitizes away (external/malformed) — starts a NEW sign-in intent:
+  // discard any stale destination left by an earlier abandoned attempt, so
+  // the home-page sign-in link (or a doctored redirect link) can't land on
+  // an old report instead of "/". The retry path is unaffected: a cancel
+  // callback arrives WITH auth params, and TRY AGAIN reuses this mounted
+  // page. Declared before the navigate effect below so an already-signed-in
+  // visit can't consume the stale value first.
   useEffect(() => {
     const params = readAuthParams()
-    const hasRedirect = new URLSearchParams(window.location.search).has("redirect")
-    if (!params.code && !params.error && !hasRedirect) takeReturnTo()
+    if (params.code || params.error) return
+    const dest = sanitizeRedirect(
+      new URLSearchParams(window.location.search).get("redirect"),
+      window.location.origin
+    )
+    if (!dest) takeReturnTo()
   }, [])
 
   // Signed in — via a fresh callback exchange or an existing session:
