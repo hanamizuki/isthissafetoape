@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import { Clock, Bell, LogIn, LogOut } from "lucide-react"
+import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -81,7 +82,9 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => signOut()}
+                      onSelect={() => {
+                        signOut().catch(() => toast.error("Couldn't sign out. Try again."))
+                      }}
                       className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400"
                     >
                       <LogOut className="h-3.5 w-3.5" />
