@@ -6,7 +6,8 @@
 // which holds the PKCE verifier and the session — the two must never share
 // keys or storage areas.
 
-export const RETURN_TO_KEY = "itsta:auth-return-to"
+// Module-private: all access goes through storeReturnTo/takeReturnTo below.
+const RETURN_TO_KEY = "itsta:auth-return-to"
 
 /**
  * Validate a requested post-login destination as a same-origin application
@@ -30,7 +31,43 @@ export function sanitizeRedirect(
   }
   // Backslash tricks ("/\evil.com") normalize to another origin here.
   if (url.origin !== origin) return null
-  return url.pathname + url.search + url.hash
+  // Dot-segments collapse during URL normalization, so an internal-looking
+  // input can come out protocol-relative ("/..//evil.com" → "//evil.com").
+  // The leading-"//" check above ran on the RAW string; re-check the
+  // NORMALIZED path before handing it back.
+  const path = url.pathname + url.search + url.hash
+  if (path.startsWith("//")) return null
+  return path
+}
+
+/**
+ * Remember the post-login destination across the round-trip to the provider.
+ * A null destination is deliberately a no-op rather than a removal: a
+ * cancel-then-retry lands back on /auth with no ?redirect= and must not wipe
+ * the destination stored by the first attempt.
+ */
+export function storeReturnTo(dest: string | null) {
+  try {
+    if (dest) window.sessionStorage.setItem(RETURN_TO_KEY, dest)
+  } catch {
+    // storage was probed writable before sign-in (isAuthStorageWritable);
+    // on a late failure the destination just falls back to "/"
+  }
+}
+
+/**
+ * Read and clear the stored destination — single-use, so call it once per
+ * navigation decision. sessionStorage can throw when the browser blocks
+ * site data entirely; treat that as "no stored destination".
+ */
+export function takeReturnTo(): string | null {
+  try {
+    const value = window.sessionStorage.getItem(RETURN_TO_KEY)
+    window.sessionStorage.removeItem(RETURN_TO_KEY)
+    return value
+  } catch {
+    return null
+  }
 }
 
 /**

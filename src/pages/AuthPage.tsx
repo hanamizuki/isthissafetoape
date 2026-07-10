@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { LoaderCircle } from "lucide-react"
 import { useAuth, type OAuthProvider } from "@/hooks/useAuth"
 import {
-  RETURN_TO_KEY,
   isAuthStorageWritable,
   sanitizeRedirect,
+  storeReturnTo,
+  takeReturnTo,
 } from "@/lib/authRedirect"
 
 // /auth is both the sign-in page and the OAuth callback target: Supabase
@@ -23,7 +24,6 @@ function readAuthParams() {
   return {
     code: pick("code"),
     error: pick("error"),
-    errorCode: pick("error_code"),
     errorDescription: pick("error_description"),
   }
 }
@@ -32,24 +32,6 @@ function readAuthParams() {
 // without navigating, preserving the router's history state.
 function clearAuthParamsFromUrl() {
   window.history.replaceState(window.history.state, "", window.location.pathname)
-}
-
-// sessionStorage can throw when the browser blocks site data entirely;
-// treat that the same as "no stored destination".
-function readStoredReturnTo(): string | null {
-  try {
-    return window.sessionStorage.getItem(RETURN_TO_KEY)
-  } catch {
-    return null
-  }
-}
-
-function clearStoredReturnTo() {
-  try {
-    window.sessionStorage.removeItem(RETURN_TO_KEY)
-  } catch {
-    // ignore — worst case the stale destination is re-validated next visit
-  }
 }
 
 type UiState =
@@ -73,11 +55,11 @@ function AuthPage() {
   useEffect(() => {
     if (loading || !user) return
     const origin = window.location.origin
+    // takeReturnTo() clears the stored key — one call per navigation decision.
     const dest =
-      sanitizeRedirect(readStoredReturnTo(), origin) ??
+      sanitizeRedirect(takeReturnTo(), origin) ??
       sanitizeRedirect(searchParams.get("redirect"), origin) ??
       "/"
-    clearStoredReturnTo()
     navigate(dest, { replace: true })
   }, [loading, user, navigate, searchParams])
 
@@ -88,15 +70,15 @@ function AuthPage() {
     if (loading || user) return
     const live = readAuthParams()
     if (live.error) {
-      const cancelled =
-        live.error === "access_denied" ||
-        /cancell?ed|denied/i.test(live.errorCode ?? "") ||
-        /cancell?ed|denied/i.test(live.errorDescription ?? "")
+      // One static message for every provider error. error_description is
+      // attacker-influenceable (anyone can craft /auth?error=...&error_
+      // description=... links), so it must never be rendered inside the
+      // trusted alert — that would be a reflected-phishing vector.
+      console.warn("OAuth provider error:", live.error, live.errorDescription)
       setUi({
         kind: "error",
-        message: cancelled
-          ? "Sign-in was cancelled or denied. No changes were made."
-          : live.errorDescription || "The sign-in provider returned an error.",
+        message:
+          "Sign-in was cancelled or the provider returned an error. Please try again.",
       })
       clearAuthParamsFromUrl()
     } else if (live.code) {
@@ -114,6 +96,17 @@ function AuthPage() {
     }
   }, [loading, user, initError])
 
+  // Pressing Back from the provider's page can restore this one from the
+  // back-forward cache with React state intact — ui stuck on "redirecting"
+  // and both buttons disabled. Reset transient state on a bfcache restore.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setUi({ kind: "idle" })
+    }
+    window.addEventListener("pageshow", onPageShow)
+    return () => window.removeEventListener("pageshow", onPageShow)
+  }, [])
+
   const startSignIn = async (provider: OAuthProvider) => {
     // The PKCE verifier (localStorage) and the return path (sessionStorage)
     // must survive the round-trip to the provider — verify before leaving.
@@ -125,14 +118,10 @@ function AuthPage() {
       })
       return
     }
-    const dest = sanitizeRedirect(searchParams.get("redirect"), window.location.origin)
-    try {
-      if (dest) window.sessionStorage.setItem(RETURN_TO_KEY, dest)
-      else window.sessionStorage.removeItem(RETURN_TO_KEY)
-    } catch {
-      // storage was probed writable above; on a race the flow still works
-      // and the destination falls back to "/"
-    }
+    // A null destination is not stored and does not clear an earlier one —
+    // a cancel-then-retry has no ?redirect= and must keep the destination
+    // from the first attempt (see storeReturnTo).
+    storeReturnTo(sanitizeRedirect(searchParams.get("redirect"), window.location.origin))
     setUi({ kind: "redirecting", provider })
     try {
       await signInWithProvider(provider)

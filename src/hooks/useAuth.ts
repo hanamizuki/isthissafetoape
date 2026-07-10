@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import type { AuthError, User } from "@supabase/supabase-js"
+import { AuthError, type User } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 
 /** The only sign-in providers the app exposes. */
@@ -19,16 +19,31 @@ export function useAuth() {
     // initialize() is the SDK's own memoized startup (already kicked off by
     // createClient): with detectSessionInUrl it consumes a ?code= callback
     // and exchanges it for a session. Awaiting it here only observes that
-    // startup and its error — it never re-runs the exchange.
-    supabase.auth
-      .initialize()
-      .then(async ({ error }) => {
-        const { data } = await supabase.auth.getUser()
+    // startup and its error — it never re-runs the exchange. getSession()
+    // then reads the resulting session locally (no network round-trip per
+    // mounted hook, and no late fetch that could overwrite the user the
+    // SIGNED_IN handler below already set).
+    const init = async () => {
+      try {
+        const { error } = await supabase.auth.initialize()
+        const { data } = await supabase.auth.getSession()
         if (cancelled) return
-        setUser(data.user)
-        setInitError(error ?? null)
-        setLoading(false)
-      })
+        setUser(data.session?.user ?? null)
+        setInitError(error)
+      } catch {
+        // auth-js can reject outside its normal error channel (e.g. a
+        // cross-tab lock acquisition timeout); surface a finite error
+        // instead of stranding the page on loading forever.
+        if (!cancelled) {
+          setInitError(
+            new AuthError("Sign-in could not be initialized. Please try again.")
+          )
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    void init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
