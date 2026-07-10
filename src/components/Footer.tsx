@@ -10,7 +10,7 @@ export function Footer() {
         href="https://github.com/hanamizuki/isthissafetoape"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 align-middle hover:text-cyan-400 transition-colors"
+        className="inline-flex items-center gap-1.5 align-middle px-2 py-[15px] -my-[15px] hover:text-cyan-400 transition-colors"
         aria-label="View source on GitHub"
       >
         GITHUB

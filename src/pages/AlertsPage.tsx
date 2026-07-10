@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { Bell, BellOff } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { PageShell } from "@/components/PageShell"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -77,7 +78,9 @@ function AlertsPage() {
           key={sub.protocol_slug}
           sub={sub}
           unfollowing={subs.unsubscribe.isPending && subs.unsubscribe.variables === sub.protocol_slug}
-          onUnfollow={() => subs.unsubscribe.mutate(sub.protocol_slug)}
+          onUnfollow={() => subs.unsubscribe.mutate(sub.protocol_slug, {
+            onError: () => toast.error(`Couldn't stop alerts for ${sub.protocol_name}. Try again.`),
+          })}
         />
       ))}
     </div>

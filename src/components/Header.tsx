@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { Clock, Bell, LogIn, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -18,6 +18,7 @@ import {
  */
 export function Header() {
   const { user, loading, signOut } = useAuth()
+  const location = useLocation()
 
   // Google supplies avatar_url (sometimes picture); Apple supplies neither,
   // so the fallback initial comes from the display name or email.
@@ -67,13 +68,13 @@ export function Header() {
                     align="end"
                     className="rounded-none border-2 border-cyan-400/25 bg-card font-pixel-sm text-[10px]"
                   >
-                    <DropdownMenuItem asChild className="rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
+                    <DropdownMenuItem asChild className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
                       <Link to="/history">
                         <Clock className="h-3.5 w-3.5" />
                         SCAN HISTORY
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
+                    <DropdownMenuItem asChild className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
                       <Link to="/alerts">
                         <Bell className="h-3.5 w-3.5" />
                         MANAGE ALERTS
@@ -81,7 +82,7 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onSelect={() => signOut()}
-                      className="rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400"
+                      className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400"
                     >
                       <LogOut className="h-3.5 w-3.5" />
                       SIGN OUT
@@ -94,7 +95,7 @@ export function Header() {
                 <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
                   FREE &middot; 3/DAY
                 </span>
-                <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-400/30 text-cyan-400 hover:border-cyan-400/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+                <Link to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`} aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-400/30 text-cyan-400 hover:border-cyan-400/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
                   <LogIn className="h-3 w-3" />
                   <span className="hidden md:inline">SIGN IN</span>
                 </Link>
