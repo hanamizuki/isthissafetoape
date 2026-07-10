@@ -51,3 +51,44 @@ export function useSubscriptions(userId: string | undefined) {
 
   return { subscribed, toggle, isLoading }
 }
+
+export interface SubscriptionRow {
+  protocol_slug: string
+  protocol_name: string
+  created_at: string
+}
+
+// Full subscription rows for the Manage Alerts page, plus an unsubscribe mutation.
+// Invalidating the "subscriptions" prefix also refreshes the report-page bell cache above.
+export function useSubscriptionList(userId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
+    queryKey: ["subscriptions", "list", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("protocol_slug, protocol_name, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+      if (error) throw error
+      return data as SubscriptionRow[]
+    },
+  })
+
+  const unsubscribe = useMutation({
+    mutationFn: async (slug: string) => {
+      if (!userId) throw new Error("Not authenticated")
+      const { error } = await supabase
+        .from("subscriptions")
+        .delete()
+        .eq("user_id", userId)
+        .eq("protocol_slug", slug)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["subscriptions"] }),
+  })
+
+  return { ...query, unsubscribe }
+}

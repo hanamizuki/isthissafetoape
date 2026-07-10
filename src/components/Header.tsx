@@ -1,11 +1,32 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
+import { Clock, Bell, LogIn, LogOut } from "lucide-react"
+import { toast } from "sonner"
+import { useAuth } from "@/hooks/useAuth"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 /**
  * Shared site header used across all pages.
- * Renders the logo, brand name, GitHub link, and optional right-side content.
- * Standardizes on shield-logo.png for consistency.
+ * Renders the logo plus the auth controls: signed-out users get the free-tier
+ * badge and a sign-in link; signed-in users get the plan badge and an avatar
+ * menu (scan history / manage alerts / sign out). Owning the auth block here
+ * keeps every page's header identical instead of each page composing its own.
  */
-export function Header({ children }: { children?: React.ReactNode }) {
+export function Header() {
+  const { user, loading, signOut } = useAuth()
+  const location = useLocation()
+
+  // Google supplies avatar_url (sometimes picture); Apple supplies neither,
+  // so the fallback initial comes from the display name or email.
+  const meta = (user?.user_metadata ?? {}) as { avatar_url?: string; picture?: string; full_name?: string; name?: string }
+  const avatarUrl = meta.avatar_url ?? meta.picture
+  const initial = (meta.full_name ?? meta.name ?? user?.email ?? "?").charAt(0).toUpperCase()
+
   return (
     <>
       {/* Skip navigation link — visually hidden until focused */}
@@ -25,18 +46,65 @@ export function Header({ children }: { children?: React.ReactNode }) {
           </span>
         </Link>
         <div className="flex items-center gap-3">
-          {children}
-          {/* GitHub repo link — min 44×44 touch target via padding */}
-          <a
-            href="https://github.com/hanamizuki/isthissafetoape"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors"
-            title="View source on GitHub"
-            aria-label="View source on GitHub"
-          >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          </a>
+          {!loading && (
+            user ? (
+              <>
+                <span className="hidden sm:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
+                  UNLIMITED
+                </span>
+                <DropdownMenu>
+                  {/* Avatar opens the account menu — min 44×44 touch target via padding */}
+                  <DropdownMenuTrigger
+                    className="flex items-center justify-center min-w-[44px] min-h-[44px] outline-none"
+                    aria-label="Account menu"
+                  >
+                    <Avatar className="h-8 w-8 rounded-none border-2 border-cyan-400/30">
+                      <AvatarImage src={avatarUrl} alt="" />
+                      <AvatarFallback className="rounded-none bg-cyan-500/10 font-pixel-sm text-[10px] text-cyan-400">
+                        {initial}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="rounded-none border-2 border-cyan-400/25 bg-card font-pixel-sm text-[10px]"
+                  >
+                    <DropdownMenuItem asChild className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
+                      <Link to="/history">
+                        <Clock className="h-3.5 w-3.5" />
+                        SCAN HISTORY
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400">
+                      <Link to="/alerts">
+                        <Bell className="h-3.5 w-3.5" />
+                        MANAGE ALERTS
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        signOut().catch(() => toast.error("Couldn't sign out. Try again."))
+                      }}
+                      className="min-h-[44px] rounded-none gap-2 cursor-pointer focus:bg-cyan-500/10 focus:text-cyan-400"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      SIGN OUT
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
+                  FREE &middot; 3/DAY
+                </span>
+                <Link to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`} aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-400/30 text-cyan-400 hover:border-cyan-400/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
+                  <LogIn className="h-3 w-3" />
+                  <span className="hidden md:inline">SIGN IN</span>
+                </Link>
+              </>
+            )
+          )}
         </div>
       </div>
     </header>

@@ -4,6 +4,7 @@ import HomePage from "@/pages/HomePage"
 import ReportPage from "@/pages/ReportPage"
 import AuthPage from "@/pages/AuthPage"
 import HistoryPage from "@/pages/HistoryPage"
+import AlertsPage from "@/pages/AlertsPage"
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/report/:id" element={<ReportPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
       </Routes>
     </BrowserRouter>
   )
