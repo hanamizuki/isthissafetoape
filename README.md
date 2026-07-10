@@ -23,7 +23,7 @@ Red flag rules automatically cap scores (e.g., no audit → max 60, anonymous te
 - Cyberpunk/retro pixel-art UI with neon glow effects
 - Shareable report links (`/report/:id`)
 - 24-hour scan caching per hostname
-- Anonymous usage (3 scans/day) or sign in for unlimited
+- Anonymous usage (3 scans/day) or sign in with Google / Apple for unlimited
 - IP-based rate limiting with SHA-256 hashed fingerprints
 
 ## Tech Stack
@@ -124,6 +124,55 @@ bun run dev
          'Content-Type', 'application/json')
      ) $$);
    ```
+
+### Authentication (Google & Apple OAuth)
+
+Sign-in is Google / Apple OAuth only, using the authorization code flow with
+PKCE (the browser client opts in via `flowType: 'pkce'` in `src/lib/supabase.ts`).
+Architecture, rollout order, and acceptance criteria live in
+`docs/spec/oauth-authentication.md`.
+
+**Supabase URL configuration** (Dashboard → Authentication → URL Configuration):
+
+- Site URL: `https://isthissafetoape.com`
+- Redirect allow list — exact paths; the app always returns to `/auth` on the
+  origin that initiated sign-in:
+  - `https://isthissafetoape.com/auth`
+  - `http://localhost:3000/auth` (plus `http://127.0.0.1:3000/auth` when testing
+    via the loopback IP)
+
+**Google** (Google Cloud Console → Credentials):
+
+1. Create an OAuth client of type Web application. Authorized JavaScript
+   origins: `https://isthissafetoape.com` and the active local origin.
+2. Authorized redirect URI: the callback shown on Supabase's Google provider
+   page (`https://<ref>.supabase.co/auth/v1/callback`).
+3. Scopes: only `openid`, `email`, `profile`. Configure the OAuth audience and
+   app branding before public release.
+4. Paste the Client ID and secret into Supabase → Authentication → Providers →
+   Google. The secret lives only in Google and Supabase, never in the frontend.
+
+**Apple** (Apple Developer → Certificates, Identifiers & Profiles):
+
+1. On an App ID with Sign in with Apple enabled, create a Services ID. Set its
+   website domain and return URL to the exact values shown on Supabase's Apple
+   provider page (`<ref>.supabase.co` / `https://<ref>.supabase.co/auth/v1/callback`).
+2. Create a Sign in with Apple private key. The `.p8` downloads once — store it
+   securely, never commit it or ship it to the frontend.
+3. Generate the client-secret JWT from the Services ID, Team ID, Key ID, and
+   `.p8`. Supabase receives the Services ID and that generated secret, not the
+   raw `.p8`.
+4. **Secret rotation**: Apple client secrets expire after at most six months.
+   Rotate every five months and verify Apple login immediately after replacing
+   the secret — a missed rotation silently disables Apple sign-in.
+5. **Hide My Email relay**: register `isthissafetoape.com` (or the exact sender
+   `alerts@isthissafetoape.com`) under Sign in with Apple → Email Communication,
+   and keep SPF/DKIM valid. Without this, alert emails to users who chose
+   Hide My Email bounce at Apple's private relay.
+
+The Supabase Email provider stays enabled until both OAuth providers pass a
+production smoke test; disabling it afterwards is a manual dashboard step (see
+the rollout order in the spec).
 
 ## License
 
