@@ -3,6 +3,7 @@ import { useSearchParams, useParams, useNavigate, useLocation, Link } from "reac
 import { ArrowLeft, ExternalLink, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Check, LogIn, Network, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAnalyze } from "@/hooks/useAnalyze"
 import { useScan } from "@/hooks/useScan"
@@ -100,6 +101,8 @@ function ReportPage() {
           </div>
         )}
         {report && <ReportContent report={report} />}
+
+        <Footer />
       </main>
     </div>
   )

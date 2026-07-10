@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { Search, Shield, Eye, TrendingUp, Zap, AlertTriangle, Lock, LogIn, LogOut, Clock } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { Search, Shield, Eye, TrendingUp, Zap, AlertTriangle, Lock, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { useAuth } from "@/hooks/useAuth"
 import { useRecentScans } from "@/hooks/useRecentScans"
 import { getTimeAgo } from "@/lib/time"
 
@@ -22,7 +22,6 @@ const SCAN_ITEMS = [
 function HomePage() {
   const [url, setUrl] = useState("")
   const navigate = useNavigate()
-  const { user, loading: authLoading, signOut } = useAuth()
   const recentScans = useRecentScans()
 
   const handleAnalyze = () => {
@@ -44,38 +43,7 @@ function HomePage() {
       <div className="hidden md:block absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none" />
       <div className="hidden md:block absolute bottom-[-200px] right-[-200px] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[100px] pointer-events-none" />
 
-      <Header>
-        {!authLoading && (
-          user ? (
-            <>
-              <Link to="/history" className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors" title="Scan history" aria-label="Scan history">
-                <Clock className="h-4 w-4" />
-              </Link>
-              <span className="hidden sm:inline-flex items-center h-11 px-3 border-2 border-emerald-500/25 font-pixel-sm text-[10px] text-emerald-400">
-                UNLIMITED
-              </span>
-              <button
-                onClick={() => signOut()}
-                className="flex items-center justify-center min-w-[44px] min-h-[44px] text-muted-foreground hover:text-cyan-400 transition-colors"
-                title="Sign out"
-                aria-label="Sign out"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="hidden md:inline-flex items-center h-11 px-3 border-2 border-muted-foreground/40 font-pixel-sm text-[10px] text-muted-foreground">
-                FREE &middot; 3/DAY
-              </span>
-              <Link to="/auth" aria-label="Sign in" className="inline-flex items-center gap-1.5 font-pixel-sm text-[10px] min-h-[44px] px-4 rounded-none border-2 border-cyan-400/30 text-cyan-400 hover:border-cyan-400/60 hover:bg-cyan-500/10 hover:text-cyan-300 transition-colors">
-                <LogIn className="h-3 w-3" />
-                <span className="hidden md:inline">SIGN IN</span>
-              </Link>
-            </>
-          )
-        )}
-      </Header>
+      <Header />
 
       {/* Hero */}
       <main id="main-content" className="relative z-10 container mx-auto px-4 pt-16 sm:pt-20 pb-16 max-w-3xl">
@@ -151,10 +119,7 @@ function HomePage() {
           </ul>
         </div>
 
-        {/* Bottom */}
-        <div className="text-center mt-14 font-pixel-sm text-[10px] text-muted-foreground tracking-wider">
-          POWERED BY AI &middot; NOT FINANCIAL ADVICE &middot; ALWAYS DYOR
-        </div>
+        <Footer />
       </main>
     </div>
   )

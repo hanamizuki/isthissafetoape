@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom"
-import { ArrowLeft, ExternalLink, Clock, Search } from "lucide-react"
+import { ExternalLink, Clock, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Header } from "@/components/Header"
+import { PageShell } from "@/components/PageShell"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/useAuth"
 import { useHistory } from "@/hooks/useHistory"
@@ -13,34 +13,36 @@ function HistoryPage() {
   const navigate = useNavigate()
   const history = useHistory()
 
+  const shell = (children: React.ReactNode) => (
+    <PageShell title="Scan History" icon={<Clock className="h-5 w-5 text-cyan-400" />}>
+      {children}
+    </PageShell>
+  )
+
   if (authLoading) {
-    return (
-      <PageShell>
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full bg-white/[0.04]" />)}
-        </div>
-      </PageShell>
+    return shell(
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full bg-white/[0.04]" />)}
+      </div>
     )
   }
 
   if (!user) {
-    return (
-      <PageShell>
-        <div className="border-2 border-cyan-400/15 bg-card/50 p-8 neon-box-cyan text-center">
-          <p className="font-pixel text-sm text-cyan-400 neon-text-cyan mb-2">SIGN IN REQUIRED</p>
-          <p className="text-sm text-muted-foreground mb-4">Sign in to view your scan history.</p>
-          <Link to={`/auth?redirect=${encodeURIComponent("/history")}`}>
-            <Button className="font-pixel text-sm rounded-none bg-cyan-500 hover:bg-cyan-400 text-background">
-              SIGN IN
-            </Button>
-          </Link>
-        </div>
-      </PageShell>
+    return shell(
+      <div className="border-2 border-cyan-400/15 bg-card/50 p-8 neon-box-cyan text-center">
+        <p className="font-pixel text-sm text-cyan-400 neon-text-cyan mb-2">SIGN IN REQUIRED</p>
+        <p className="text-sm text-muted-foreground mb-4">Sign in to view your scan history.</p>
+        <Link to={`/auth?redirect=${encodeURIComponent("/history")}`}>
+          <Button className="font-pixel text-sm rounded-none bg-cyan-500 hover:bg-cyan-400 text-background">
+            SIGN IN
+          </Button>
+        </Link>
+      </div>
     )
   }
 
-  return (
-    <PageShell>
+  return shell(
+    <>
       {history.isLoading && (
         <div className="space-y-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full bg-white/[0.04]" />)}
@@ -74,32 +76,7 @@ function HistoryPage() {
           ))}
         </div>
       )}
-    </PageShell>
-  )
-}
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-background relative overflow-hidden scanlines">
-      {/* Blur orb — hidden on mobile to reduce GPU compositing cost */}
-      <div className="hidden md:block absolute top-[-200px] right-[-100px] w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
-
-      <Header />
-
-      <main id="main-content" className="relative z-10 container mx-auto px-4 py-8 max-w-3xl">
-        <Link to="/" className="inline-flex items-center gap-1.5 min-h-[44px] text-sm text-muted-foreground hover:text-cyan-400 transition-colors mb-6">
-          <ArrowLeft className="h-4 w-4" />
-          <span className="font-pixel-sm text-[10px]">HOME</span>
-        </Link>
-
-        <div className="flex items-center gap-3 mb-6">
-          <Clock className="h-5 w-5 text-cyan-400" />
-          <h1 className="font-pixel text-xl sm:text-2xl text-white neon-text-cyan">Scan History</h1>
-        </div>
-
-        {children}
-      </main>
-    </div>
+    </>
   )
 }
 

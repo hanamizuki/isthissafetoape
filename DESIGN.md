@@ -124,7 +124,7 @@ A dark cabinet lit by one cyan tube and a four-stop danger spectrum. Cyan is the
 
 ### Secondary — The Risk Spectrum
 The four-stop scale that colors every score, gauge segment, risk badge, and red-flag dot. This is the semantic core; a degen reads the color before the number.
-- **Safe Green** (`#10b981`, `emerald` / `--neon-green-rgb`): low risk, positive signals, "READY / UNLIMITED" status, filled gauge at ≥70%.
+- **Safe Green** (`#10b981`, `emerald` / `--neon-green-rgb`): low risk, positive signals, "READY" status, filled gauge at ≥70%.
 - **Caution Yellow** (`#e8ff00`, `--neon-yellow-rgb`): moderate risk, medium-severity flags, daily-limit warnings, gauge 50–69%.
 - **Alarm Orange** (`#f97316`, `orange-500`): high risk, high-severity flags, gauge 30–49%.
 - **Danger Pink** (`#ff2d78`, `--neon-pink-rgb`): very-high / critical risk, red-flag panels, scan-failure errors, gauge <30%.
@@ -201,11 +201,11 @@ There are no drop shadows. This is a flat, sharp-cornered system where depth is 
 - These hand-rolled semantic panels — not the shadcn `Card` — are the real container primitive. Never nest them.
 
 ### Badges / Status Pills
-- **Style:** hand-rolled `<span>`, sharp, `border-2`, Press Start 2P uppercase, colored by state — Safe Green "UNLIMITED", Neon Cyan "FREE · 3/DAY", risk-spectrum "RISK LABEL". Not the shadcn rounded-full `Badge`.
+- **Style:** hand-rolled `<span>`, sharp, `border-2`, Press Start 2P uppercase, colored by state — Ink Muted plan pills ("UNLIMITED", "FREE · 3/DAY" — plan status is metadata, not a signal), risk-spectrum "RISK LABEL". Not the shadcn rounded-full `Badge`.
 - **State:** the pill's color IS its meaning (Risk-Color Rule). Bound by the Readable-Floor Rule on size.
 
 ### Navigation (Header)
-- Sticky top bar, `border-b-2` Neon Cyan `/20`. Shield logo with cyan drop-glow + Pixelify Sans wordmark in cyan bloom. Icon links (history, sign-out, GitHub) are 44×44px touch targets in Ink Muted, brightening to Neon Cyan on hover. A skip-to-content link precedes it. Opaque bg on mobile; translucent + `backdrop-blur` on desktop only (perf).
+- Sticky top bar, `border-b-2` Neon Cyan `/20`. Shield logo with cyan drop-glow + Pixelify Sans wordmark in cyan bloom. The header is self-contained and identical on every page: signed out it shows the plan pill + SIGN IN; signed in it shows the plan pill + a square avatar (44×44px touch target) opening a sharp-cornered dropdown — Scan History, Manage Alerts, Sign Out. A skip-to-content link precedes it. Opaque bg on mobile; translucent + `backdrop-blur` on desktop only (perf). The GitHub link lives in the shared footer ("GITHUB · NOT FINANCIAL ADVICE · ALWAYS DYOR") rendered at the bottom of every page.
 
 ### Signature: The Pixel Score Gauge
 The machine's centerpiece and the North Star made literal. A large Pixelify Sans score (`text-4xl`→`text-5xl`) painted in the risk-spectrum color, above a **ten-segment HP bar**: filled segments in the verdict color, empty segments in `rgba(255,255,255,0.06)`, a `/maxScore` label beneath. The same segmented bar recurs inside every `CategoryCard`, thresholded per-category (≥70 green, ≥50 yellow, ≥30 orange, else pink). This bar is the product's single most recognizable object — an arcade health meter for a DeFi project's life expectancy. The large gauge score stays Pixelify Sans (the signature); smaller inline scores — category cards, scan-history and recent-scan rows — are set in mono for legibility.
