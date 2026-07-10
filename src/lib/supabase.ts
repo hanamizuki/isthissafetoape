@@ -10,4 +10,17 @@ if (!supabaseUrl || !supabaseKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    // Authorization-code flow with PKCE: the OAuth redirect back to /auth
+    // carries a short-lived one-time code instead of access/refresh tokens in
+    // the URL fragment. supabase-js still defaults to the implicit flow, so
+    // PKCE must be opted into explicitly.
+    flowType: 'pkce',
+    // Let the SDK consume the ?code= callback on startup: it exchanges the
+    // code for a session, persists it, and strips the code from the URL.
+    // The app must never call exchangeCodeForSession itself — the code is
+    // single-use and a manual exchange would race this automatic one.
+    detectSessionInUrl: true,
+  },
+})

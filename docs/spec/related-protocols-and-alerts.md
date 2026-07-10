@@ -43,7 +43,7 @@ A RELATED PROTOCOLS section above the Deep Dive block. Each row: name, relations
 
 ## 2. Feature: Subscriptions
 
-- Login required (email comes from `auth.users`). Anonymous users clicking the bell are routed to `/auth`.
+- Login required, via Google or Apple OAuth (authorization code + PKCE; see `docs/spec/oauth-authentication.md`). The alert recipient address comes from `auth.users.email`; for Apple "Hide My Email" users this is a private relay address, deliverable only while the sender is registered with Apple's Email Communication service (see README). Anonymous users clicking the bell are routed to `/auth`, which returns them to the report after sign-in.
 - `subscriptions` table: id, user_id (FK auth.users), protocol_slug, protocol_name, created_at; unique (user_id, protocol_slug). RLS: users select/insert/delete only their own rows.
 - Subscription key: the DeFiLlama slug when resolution found one; otherwise the lowercased protocol name (covers CoinGecko-only and unresolved protocols — keyword matching in the notify pipeline uses name and twitter handle anyway, so a missing slug only loses the directory join, not the alert).
 - No subscription management page in MVP — the report-page bell toggles, and every email contains an unsubscribe link.
